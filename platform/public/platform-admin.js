@@ -33,8 +33,89 @@
     status(`تم التحقق من مدير المنصة: ${user.email || user.uid}`);
     await loadTenants();
   }
+  function tenantState(directoryStatus, billingStatus) {
+    if (directoryStatus === "closed" || billingStatus === "cancelled") return "closed";
+    if (directoryStatus === "suspended" || billingStatus === "suspended") return "suspended";
+    if (directoryStatus === "active" && billingStatus === "trial") return "trial";
+    if (directoryStatus === "active" && billingStatus === "active") return "active";
+    return "pending";
+  }
+  const stateMeta = {
+    active: { label: "نشطة", badge: "state-active", action: "suspended", actionLabel: "إيقاف الورشة" },
+    trial: { label: "نشطة · فترة تجريبية", badge: "state-trial", action: "suspended", actionLabel: "إيقاف الورشة" },
+    suspended: { label: "موقوفة", badge: "state-suspended", action: "active", actionLabel: "تفعيل الورشة" },
+    closed: { label: "مغلقة", badge: "state-closed", action: null, actionLabel: "مغلقة" },
+    pending: { label: "تحتاج مراجعة", badge: "state-pending", action: "active", actionLabel: "تفعيل الورشة" }
+  };
+  let tenantCache = [];
+  function renderTenants() {
+    const query = ($("tenant-search")?.value || "").trim().toLocaleLowerCase();
+    const filter = $("tenant-filter")?.value || "all";
+    const filtered = tenantCache.filter(({id,t,state}) => {
+      const haystack = [t.name,id,t.ownerUid].join(" ").toLocaleLowerCase();
+      return (!query || haystack.includes(query)) && (filter === "all" || filter === state || (filter === "active" && state === "trial"));
+    });
+    const counts = tenantCache.reduce((acc,row) => {
+      acc.total++;
+      if (row.state === "active" || row.state === "trial") acc.active++;
+      else if (row.state === "suspended") acc.suspended++;
+      else acc.review++;
+      return acc;
+    }, {total:0,active:0,suspended:0,review:0});
+    if ($("tenant-total")) $("tenant-total").textContent = counts.total;
+    if ($("tenant-active")) $("tenant-active").textContent = counts.active;
+    if ($("tenant-suspended")) $("tenant-suspended").textContent = counts.suspended;
+    if ($("tenant-review")) $("tenant-review").textContent = counts.review;
+    $("tenant-list").innerHTML = filtered.length ? filtered.map(({id,t,b,state}) => {
+      const meta = stateMeta[state];
+      const canChange = Boolean(meta.action);
+      return `<article class="tenant-item" data-tenant-id="${esc(id)}">
+        <div class="tenant-main">
+          <div class="tenant-title-row"><div class="tenant-name">${esc(t.name || "ورشة بدون اسم")}</div><span class="state-badge ${meta.badge}">${meta.label}</span></div>
+          <div class="tenant-meta" dir="ltr">${esc(id)} · ${esc(t.ownerUid || "UID غير مسجل")}</div>
+          <div class="tenant-submeta">الباقة: ${esc(b.planId || "غير محددة")} · ${esc(b.billingModel || "غير محدد")}</div>
+        </div>
+        <div class="tenant-actions">
+          ${canChange ? `<button data-id="${esc(id)}" data-status="${meta.action}" class="status-btn ${meta.action === "active" ? "action-enable" : "action-disable"}">${meta.actionLabel}</button>` : `<button class="status-btn" disabled>${meta.actionLabel}</button>`}
+        </div></article>`;
+    }).join("") : `<div class="empty"><b>${tenantCache.length ? "لا توجد نتائج مطابقة" : "لا توجد ورش مسجلة حتى الآن"}</b>${tenantCache.length ? "جرّب تغيير عبارة البحث أو فلتر الحالة." : "ابدأ بإضافة أول ورشة من النموذج المجاور."}</div>`;
+    document.querySelectorAll(".status-btn[data-id]").forEach(btn => btn.addEventListener("click", async () => {
+      const id = btn.dataset.id, nextStatus = btn.dataset.status;
+      const row = tenantCache.find(item => item.id === id);
+      if (!row) return;
+      const currentMeta = stateMeta[row.state];
+      if (currentMeta.action !== nextStatus) {
+        status("تغيرت حالة الورشة في القائمة. حدّث البيانات قبل تنفيذ العملية.", true);
+        await loadTenants();
+        return;
+      }
+      const actionText = nextStatus === "active" ? "تفعيل" : "إيقاف";
+      if (!window.confirm(`هل تريد ${actionText} ورشة «${row.t.name || id}»؟`)) return;
+      btn.disabled = true;
+      btn.textContent = "جارٍ الحفظ...";
+      try {
+        const updates = {};
+        updates[`platform/tenantDirectory/${id}/status`] = nextStatus;
+        updates[`platformBilling/${id}/status`] = nextStatus;
+        updates[`platform/auditLog/${db.ref("platform/auditLog").push().key}`] = {
+          action: "tenant.status.changed", tenantId: id, status: nextStatus,
+          previousStatus: row.state, actorUid: auth.currentUser.uid, at: now
+        };
+        await db.ref().update(updates);
+        status(`تم ${actionText} الورشة بنجاح. جارٍ تحديث القائمة...`);
+        await loadTenants();
+      } catch (e) {
+        const message = e.code === "PERMISSION_DENIED" || /permission_denied/i.test(e.message || "")
+          ? "رفض Firebase العملية. راجع صلاحية platformAdmin وقواعد قاعدة البيانات."
+          : (e.message || `تعذر ${actionText} الورشة.`);
+        status(message, true);
+        await loadTenants();
+      }
+    }));
+  }
   async function loadTenants() {
     $("tenant-list").textContent = "جارٍ تحميل الورش...";
+    if ($("refresh")) $("refresh").disabled = true;
     try {
       const [directorySnap,billingSnap] = await Promise.all([
         db.ref("platform/tenantDirectory").get(),
@@ -42,29 +123,18 @@
       ]);
       const directory = directorySnap.val() || {};
       const billing = billingSnap.val() || {};
-      const rows = Object.entries(directory);
-      $("tenant-list").innerHTML = rows.length ? rows.map(([id,t]) => {
+      tenantCache = Object.entries(directory).map(([id,t]) => {
         const b = billing[id] || {};
-        return `<article class="tenant-item">
-          <div><div class="tenant-name">${esc(t.name)}</div><div class="tenant-meta" dir="ltr">${esc(id)} · ${esc(t.ownerUid)} · ${esc(b.status || "غير محدد")}</div></div>
-          <div class="tenant-actions">
-            <button data-id="${esc(id)}" data-status="active" class="status-btn">تفعيل</button>
-            <button data-id="${esc(id)}" data-status="suspended" class="status-btn">إيقاف</button>
-          </div></article>`;
-      }).join("") : '<div class="empty"><b>لا توجد ورش مسجلة حتى الآن</b>ابدأ بإضافة أول ورشة من النموذج المجاور.</div>';
-      document.querySelectorAll(".status-btn").forEach(btn => btn.addEventListener("click", async () => {
-        try {
-          const id=btn.dataset.id, st=btn.dataset.status;
-          const updates={};
-          updates[`platform/tenantDirectory/${id}/status`]=st;
-          updates[`platformBilling/${id}/status`]=st === "active" ? "active" : "suspended";
-          updates[`platform/auditLog/${db.ref("platform/auditLog").push().key}`]={action:"tenant.status.changed",tenantId:id,status:st,actorUid:auth.currentUser.uid,at:now};
-          await db.ref().update(updates);
-          status(`تم تحديث حالة الورشة إلى ${st === "active" ? "نشطة" : "موقوفة"}.`);
-          await loadTenants();
-        } catch(e) { status(e.message || "تعذر تحديث الحالة.",true); }
-      }));
-    } catch(e) { $("tenant-list").textContent=e.message || "تعذر تحميل الورش."; }
+        return {id,t,b,state:tenantState(t.status,b.status)};
+      });
+      renderTenants();
+      status(`تم تحميل ${tenantCache.length} ورشة ومراجعة حالتها.`);
+    } catch(e) {
+      $("tenant-list").innerHTML = '<div class="empty"><b>تعذر تحميل قائمة الورش</b>تأكد من صلاحيات مدير المنصة وقواعد Firebase ثم أعد المحاولة.</div>';
+      status(e.message || "تعذر تحميل الورش.", true);
+    } finally {
+      if ($("refresh")) $("refresh").disabled = false;
+    }
   }
   $("login").addEventListener("click", async () => {
     try { await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value); }
@@ -72,6 +142,8 @@
   });
   $("logout").addEventListener("click", () => auth.signOut());
   $("refresh").addEventListener("click", loadTenants);
+  $("tenant-search")?.addEventListener("input", renderTenants);
+  $("tenant-filter")?.addEventListener("change", renderTenants);
   $("create-form").addEventListener("submit", async e => {
     e.preventDefault();
     const btn=$("create-btn"); btn.disabled=true; btn.textContent="جارٍ الإنشاء...";

@@ -27,6 +27,8 @@ jobs:
           node tests/auth-config.test.cjs
           node tests/platform-architecture.test.cjs
           node tests/zero-cost-platform.test.cjs
+          node tests/platform-admin-ui.test.cjs
+          node tests/preferences.test.cjs
 
       - name: Validate Firebase configuration and rules
         run: |

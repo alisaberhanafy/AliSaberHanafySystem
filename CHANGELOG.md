@@ -1,3 +1,12 @@
+## v1.5.6 — Smart Workshop Management
+
+- Replaced duplicate activate/stop controls with one context-aware action based on the combined workshop directory and billing state.
+- Added explicit state badges for active, trial, suspended, closed, and review-required workshops.
+- Added workshop search by name, tenant ID, or owner UID, plus state filters and live summary counters.
+- Added confirmation before changing workshop access, disabled the action while saving, and refreshed authoritative Firebase state after success or failure.
+- Added clearer permission-denied guidance and regression checks for the platform admin workflow.
+- Kept the existing Firebase data model and tenant isolation rules unchanged.
+
 ## v1.5.5.1 — Platform billing read permission fix
 - Fixed the platform admin workshop list returning `Permission denied`: the console reads `/platformBilling` as a collection, so the RTDB rules now grant collection-level read access only to authenticated users with the `platformAdmin` custom claim.
 - Kept write permissions scoped to individual billing records and protected by the same platform-admin claim.

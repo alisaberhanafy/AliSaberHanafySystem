@@ -1,0 +1,15 @@
+{
+  "name": "ali-saber-firebase-admin-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-only Firebase Staging diagnostics and safe tenant membership repair tools",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "check": "node tenant-access.js check",
+    "repair:dry": "node tenant-access.js repair",
+    "repair:apply": "node tenant-access.js repair --apply"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  }
+}

@@ -21,6 +21,7 @@ const AuthModule = {
             this._ready = new Promise(resolve => {
                 const unsubscribe = this.auth.onAuthStateChanged(async user => {
                     this.currentUser = user || null;
+                    this._accessError = '';
                     this.currentRole = null;
                     this.tenantId = null;
                     this.membership = null;
@@ -45,26 +46,37 @@ const AuthModule = {
         const db = firebase.database();
         const indexSnap = await db.ref(`userTenantIndex/${user.uid}`).once('value');
         const index = indexSnap.val() || {};
-        const activeEntries = Object.entries(index).filter(([tenantId, item]) =>
-            item && item.tenantId === tenantId && item.active === true &&
-            ['owner', 'admin', 'editor', 'viewer'].includes(item.role)
-        );
+        const allowedRoles = ['owner', 'admin', 'editor', 'viewer'];
 
-        if (activeEntries.length === 0) {
-            throw new Error('الحساب مسجل، لكن لا توجد له عضوية نشطة مرتبطة بورشة. اطلب من مدير المنصة مراجعة ربط UID.');
+        // Support both index formats already found in Staging:
+        // 1) legacy: userTenantIndex/{uid}/{tenantId} = "{tenantId}"
+        // 2) current: userTenantIndex/{uid}/{tenantId} = { tenantId, active, role }
+        // The membership record remains authoritative for active state and role.
+        const indexedEntries = Object.entries(index).filter(([tenantId, item]) => {
+            if (typeof item === 'string') return item === tenantId;
+            return Boolean(item && typeof item === 'object' &&
+                item.tenantId === tenantId && item.active === true &&
+                allowedRoles.includes(item.role));
+        });
+
+        if (indexedEntries.length === 0) {
+            throw new Error('الحساب مسجل، لكن لا توجد له إحالة صحيحة إلى ورشة. اطلب من مدير المنصة مراجعة userTenantIndex وعضوية الورشة.');
         }
-        if (activeEntries.length > 1) {
+        if (indexedEntries.length > 1) {
             throw new Error('هذا الحساب مرتبط بأكثر من ورشة. يلزم اختيار الورشة قبل الدخول؛ لم يتم فتح أي بيانات تلقائياً.');
         }
 
-        const [tenantId, indexedMembership] = activeEntries[0];
+        const [tenantId, indexValue] = indexedEntries[0];
         const [membershipSnap, profileSnap] = await Promise.all([
             db.ref(`tenantMemberships/${tenantId}/${user.uid}`).once('value'),
             db.ref(`tenants/${tenantId}/profile`).once('value')
         ]);
         const membership = membershipSnap.val();
-        if (!membership || membership.active !== true || membership.role !== indexedMembership.role) {
-            throw new Error('عضوية الورشة غير متطابقة مع سجل الربط. اطلب من مدير المنصة تحديث العضوية.');
+        if (!membership || membership.active !== true || !allowedRoles.includes(membership.role)) {
+            throw new Error('تم العثور على إحالة الورشة، لكن سجل tenantMemberships غير نشط أو يحتوي على دور غير صالح.');
+        }
+        if (indexValue && typeof indexValue === 'object' && indexValue.role !== membership.role) {
+            throw new Error('دور المستخدم في userTenantIndex لا يطابق tenantMemberships. شغّل أداة فحص وإصلاح Firebase.');
         }
         if (!profileSnap.exists()) {
             throw new Error('تم العثور على العضوية، لكن ملف الورشة غير متاح. راجع حالة الورشة وإعدادات قاعدة البيانات.');

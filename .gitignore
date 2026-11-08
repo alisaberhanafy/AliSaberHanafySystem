@@ -16,3 +16,7 @@ platform/.firebase/
 **/service-account*.json
 **/*-adminsdk-*.json
 FirebaseSecrets/
+
+# Local-only Firebase admin tools and backups
+platform/admin-tools/node_modules/
+platform/admin-tools/backups/

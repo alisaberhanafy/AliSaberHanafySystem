@@ -102,3 +102,9 @@
 - Added IBM Plex Sans Arabic/Latin typography and responsive settings UI.
 - Documented the current legacy data-path boundary and safe next steps for tenant-scoped cloud preferences.
 - No Firebase rules, authentication roles, invoice calculations, or business data paths changed.
+
+
+## v1.5.11
+- Fix: accept legacy string and current object formats in `userTenantIndex` while validating the authoritative `tenantMemberships` record.
+- Add local Windows Terminal toolkit for Staging membership diagnostics and guarded index repair.
+- Add dry-run, explicit apply confirmation, project-ID guard, owner/status checks, post-write verification, and local pre-change backup.

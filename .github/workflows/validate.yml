@@ -20,6 +20,7 @@ jobs:
           if [ -f catalog-data.js ]; then node --check catalog-data.js; fi
           node --check platform/public/platform-admin.js
           node --check platform/public/firebase-config.staging.js
+          node --check platform/admin-tools/tenant-access.js
 
       - name: Run project tests
         run: |
@@ -32,6 +33,7 @@ jobs:
           node tests/portal.test.cjs
           node tests/tenant-index.test.cjs
           node tests/auth-diagnostics.test.cjs
+          node tests/auth-index-compat.test.cjs
 
       - name: Validate Firebase configuration and rules
         run: |

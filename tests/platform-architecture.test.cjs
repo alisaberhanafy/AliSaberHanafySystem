@@ -1,16 +1,19 @@
 const fs = require("fs");
 const path = require("path");
-const base = path.join(__dirname, "..", "platform");
-const fn = fs.readFileSync(path.join(base, "functions/index.js"), "utf8");
-const rules = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "architecture/firebase/database.rules.multitenant.draft.json"), "utf8"));
-const html = fs.readFileSync(path.join(base, "public/platform-admin.html"), "utf8");
-const js = fs.readFileSync(path.join(base, "public/platform-admin.js"), "utf8");
-for (const name of ["createTenant", "listPlatformTenants", "setTenantStatus", "addTenantMember", "setTenantMember"]) {
-  if (!fn.includes(`exports.${name} = onCall`)) throw new Error(`Missing callable: ${name}`);
-}
-if (!rules.rules.tenants.$tenantId[".read"].includes("tenantMemberships")) throw new Error("Tenant read rule must verify membership");
-if (rules.rules.tenantMemberships.$tenantId.$uid[".write"] !== false) throw new Error("Membership must not be writable by clients");
-if (rules.rules.platformBilling.$tenantId[".write"] !== false) throw new Error("Billing must not be writable by clients");
-if (!html.includes("owner-email") || !js.includes("ownerEmail")) throw new Error("Platform console must assign a tenant owner");
-if (fn.includes("REPLACE_WITH_OWNER_UID")) throw new Error("Do not use hard-coded placeholder UID");
-console.log("Platform architecture checks passed.");
+const root = path.join(__dirname, "..");
+const platform = path.join(root, "platform");
+const rules = JSON.parse(fs.readFileSync(path.join(platform, "database.rules.spark.json"), "utf8")).rules;
+const html = fs.readFileSync(path.join(platform, "public/platform-admin.html"), "utf8");
+const js = fs.readFileSync(path.join(platform, "public/platform-admin.js"), "utf8");
+const config = fs.readFileSync(path.join(platform, "public/firebase-config.staging.js"), "utf8");
+
+if (fs.existsSync(path.join(platform, "functions"))) throw new Error("Zero-cost edition must not contain Cloud Functions");
+if (!js.includes("token.claims.platformAdmin")) throw new Error("Platform console must verify platformAdmin custom claim");
+if (!js.includes("db.ref().update(updates)")) throw new Error("Tenant creation must use an atomic database update");
+if (!html.includes("owner-uid")) throw new Error("Platform console must link tenant owner by UID");
+if (!config.includes("alisabersystem-staging")) throw new Error("Staging Firebase config missing");
+if (rules[".read"] !== false || rules[".write"] !== false) throw new Error("Database root must deny public access");
+if (!rules.platform[".write"].includes("auth.token.platformAdmin")) throw new Error("Platform writes must require platformAdmin");
+if (!rules.tenants.$tenantId[".read"].includes("tenantMemberships")) throw new Error("Tenant reads must verify membership");
+if (!rules.tenantMemberships.$tenantId.$memberUid[".read"].includes("auth.uid")) throw new Error("Membership reads must be scoped to member or platform admin");
+console.log("Zero-cost platform architecture checks passed.");

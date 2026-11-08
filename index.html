@@ -1,360 +1,120 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl" class="dark">
+<!doctype html>
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALI SABER SYSTEM - المنظومة السحابية المتكاملة</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { darkMode: 'class' }
-    </script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Firebase App & Realtime Database SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-    <!-- html2pdf & html2canvas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-    <!-- الملفات الخارجية -->
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen custom-scrollbar pb-12 overflow-x-hidden">
-
-    <!-- مؤشر حالة الاتصال السحابي بفايربيز -->
-    <div id="firebase-status-banner" class="bg-amber-500/10 border-b border-amber-500/20 text-amber-600 dark:text-amber-400 py-1.5 text-[11px] font-bold px-4 flex items-center justify-start gap-2">
-        <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0" id="firebase-status-dot"></span>
-        <span id="firebase-status-text">جاري الاتصال بقاعدة بيانات Firebase السحابية...</span>
-    </div>
-
-    <!-- 1️⃣ الشريط العلوي -->
-    <header class="app-header">
-        <div class="app-header-container">
-            <div class="header-logo-box">
-                <div class="header-logo-icon">AS</div>
-                <div class="leading-tight truncate">
-                    <h1 class="font-black text-[11px] sm:text-xs text-slate-900 dark:text-white tracking-wide truncate">ALI SABER SYSTEM</h1>
-                    <p class="text-[7.5px] sm:text-[8px] text-slate-500 dark:text-slate-400 font-bold truncate">عزب القصر</p>
-                </div>
-            </div>
-
-            <div class="header-actions-group">
-                <button id="easy-mode-toggle" type="button" onclick="PreferencesModule.toggleMode()" title="التبديل بين الوضع السهل والاحترافي" class="header-btn mode-toggle-btn">
-                    <i data-lucide="wand-sparkles" class="icon-sm"></i>
-                    <span class="header-btn-text" id="easy-mode-toggle-label">الوضع السهل</span>
-                </button>
-                <button type="button" onclick="PreferencesModule.openSettings()" title="تخصيص لوحة التحكم" class="header-btn settings-open-btn">
-                    <i data-lucide="sliders-horizontal" class="icon-sm"></i>
-                    <span class="header-btn-text">تخصيص العرض</span>
-                </button>
-                <input type="file" id="restore-backup-file-input" class="hidden" accept=".json" onchange="importSystemBackup(event)">
-                
-                <button onclick="ThemeModule.toggleTheme()" title="تغيير الوضع" class="header-btn text-slate-700 dark:text-amber-400 advanced-only">
-                    <i data-lucide="sun" id="theme-icon-sun" class="icon-sm hidden dark:inline"></i>
-                    <i data-lucide="moon" id="theme-icon-moon" class="icon-sm inline dark:hidden text-slate-700"></i>
-                    <span class="header-btn-text" id="theme-text">الوضع النهاري</span>
-                </button>
-
-                <button onclick="scrollToSection('dashboard-section')" title="الرئيسية" class="header-btn">
-                    <i data-lucide="house" class="icon-sm text-blue-500 dark:text-blue-400"></i>
-                    <span class="header-btn-text">الرئيسية</span>
-                </button>
-
-                <button onclick="PaymentModule.openPaymentModal()" title="الدفع السريع" class="header-btn">
-                    <i data-lucide="dollar-sign" class="icon-sm text-emerald-600 dark:text-emerald-400"></i>
-                    <span class="header-btn-text">الدفع السريع</span>
-                </button>
-
-                <button onclick="ClientModule.openAllClientsModal()" title="البحث عن عميل" class="header-btn">
-                    <i data-lucide="search" class="icon-sm text-indigo-600 dark:text-indigo-400"></i>
-                    <span class="header-btn-text">البحث عن عميل</span>
-                </button>
-
-                <button onclick="window.location.href='catalog.html'" title="إدارة الكتالوج" class="header-btn advanced-only">
-                    <i data-lucide="boxes" class="icon-sm text-amber-600 dark:text-amber-400"></i>
-                    <span class="header-btn-text">إدارة الكتالوج</span>
-                </button>
-
-                <button onclick="openBackupOptionsModal()" title="النسخ الاحتياطي" class="header-btn text-slate-700 dark:text-emerald-400 advanced-only">
-                    <i data-lucide="database" class="icon-sm"></i>
-                    <span class="header-btn-text">النسخ الاحتياطي</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto px-3 sm:px-4 mt-6 space-y-6">
-
-        <!-- 2️⃣ قسم الإحصائيات والأزرار الرئيسية -->
-        <section id="dashboard-section" class="space-y-4">
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
-                <div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <h2 class="text-xl font-black text-slate-900 dark:text-white">لوحة التحكم ومؤشرات المبيعات والماليات العامة</h2>
-                        <span class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> متصل بالسحابة لحظياً
-                        </span>
-                    </div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-semibold">عزب القصر • نظام الحسابات والمبيعات.</p>
-                </div>
-                
-                <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                    <button onclick="ClientModule.openAllClientsModal()" class="flex-1 md:flex-none bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/20">
-                        <i data-lucide="search" class="w-4 h-4"></i>
-                        <span>عميل حالي</span>
-                    </button>
-
-                    <button onclick="ClientModule.openAddClientModal()" class="flex-1 md:flex-none bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2.5 rounded-xl text-xs border border-slate-300 dark:border-slate-700 flex items-center justify-center gap-2 transition">
-                        <i data-lucide="user-plus" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
-                        <span>عميل جديد</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- كروت المؤشرات المالية بالترتيب الجديد المطلوب -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                
-                <!-- 1. عمليات الشهر (من يوم 1) -->
-                <div id="monthly-ops-card-wrapper" data-dashboard-widget="monthlyOps" onclick="DashboardModule.openMonthlyOperationsModal()" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-blue-500 transition-all flex flex-col justify-between">
-                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
-                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">📊 عمليات الشهر (من يوم 1)</span>
-                        <span class="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg font-bold">التفاصيل 👈</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 text-center pt-1">
-                        <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800">
-                            <span class="text-[10px] text-slate-400 block font-bold">عدد العمليات</span>
-                            <span id="monthly-ops-count" class="text-sm font-black text-blue-600 dark:text-blue-400 font-mono">0 عملية</span>
-                        </div>
-                        <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800">
-                            <span class="text-[10px] text-slate-400 block font-bold">إجمالي المبلغ</span>
-                            <span id="monthly-ops-amount" class="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono">0 ج</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. إجمالي الديون (بره) -->
-                <div id="debts-card" data-dashboard-widget="debts" onclick="DashboardModule.openFilteredClientsModal('debts')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-rose-500 transition-all flex flex-col justify-between">
-                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
-                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">إجمالي الديون (بره)</span>
-                        <span class="text-[10px] bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
-                    </div>
-                    <div class="text-left pt-1">
-                        <span id="total-debts" class="text-xl font-black text-rose-600 dark:text-rose-400 font-mono">0 ج</span>
-                    </div>
-                </div>
-
-                <!-- 3. إجمالي المقدمات (عربون) -->
-                <div id="advances-card" data-dashboard-widget="advances" onclick="DashboardModule.openFilteredClientsModal('advances')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-emerald-500 transition-all flex flex-col justify-between">
-                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
-                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">إجمالي المقدمات (عربون)</span>
-                        <span class="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
-                    </div>
-                    <div class="text-left pt-1">
-                        <span id="total-advances" class="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">0 ج</span>
-                    </div>
-                </div>
-
-                <!-- 4. بيعت بكام النهارده (مستلم) -->
-                <div id="today-sales-card" data-dashboard-widget="todaySales" onclick="DashboardModule.openFilteredClientsModal('todaySales')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-blue-500 transition-all flex flex-col justify-between">
-                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
-                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">بيعت بكام النهارده (مستلم)</span>
-                        <span class="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
-                    </div>
-                    <div class="text-left pt-1">
-                        <span id="today-sales-delivered" class="text-xl font-black text-blue-600 dark:text-blue-400 font-mono">0 ج</span>
-                    </div>
-                </div>
-
-                <!-- 5. كسبت كام النهارده (ربحي) -->
-                <div id="today-profit-card" data-dashboard-widget="todayProfit" onclick="DashboardModule.openFilteredClientsModal('todayProfit')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-emerald-500 transition-all flex flex-col justify-between">
-                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
-                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">كسبت كام النهارده (ربحي)</span>
-                        <span class="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
-                    </div>
-                    <div class="text-left pt-1">
-                        <span id="today-profit-delivered" class="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">0 ج</span>
-                    </div>
-                </div>
-
-                <!-- 6. إجمالي العملاء المسجلين -->
-                <div id="clients-card" data-dashboard-widget="clients" onclick="ClientModule.openAllClientsModal()" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-indigo-500 transition-all flex flex-col justify-between">
-                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
-                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">إجمالي العملاء المسجلين</span>
-                        <span class="text-[10px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-lg font-bold">إدارة 👈</span>
-                    </div>
-                    <div class="text-left pt-1">
-                        <span id="total-clients-count" class="text-xl font-black text-indigo-600 dark:text-indigo-400 font-mono">0 عميل</span>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- الرسم البياني الحي -->
-            <div id="daily-chart-widget" data-dashboard-widget="dailyChart" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-3 shadow-sm">
-                <div class="flex justify-between items-center flex-wrap gap-2">
-                    <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-500 dark:text-blue-400"></i>
-                        <span>مؤشر حركة المبيعات والشغل المستلم اليومي</span>
-                    </h3>
-                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">تحديث تلقائي</span>
-                </div>
-                <div class="h-56 relative w-full">
-                    <canvas id="dailyWorkChart"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3️⃣ بطاقة العميل النشط -->
-        <section id="clients-section" class="w-full">
-            <div id="active-client-card" class="hidden bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 rounded-xl space-y-3"></div>
-            <div id="no-client-selected-msg" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-800 p-8 rounded-2xl text-center space-y-3">
-                <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto text-xl font-bold">
-                    🔍
-                </div>
-                <h3 class="text-base font-black text-slate-900 dark:text-white">لم يتم اختيار عميل بعد</h3>
-                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 max-w-md mx-auto">اضغط على زر "عميل حالي" من الشريط العلوي أو لوحة التحكم للبدء في إدارة فواتيره وحساباته.</p>
-                <button onclick="ClientModule.openAllClientsModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shadow-blue-600/20">
-                    اختر عميل الآن 👈
-                </button>
-            </div>
-        </section>
-
-        <!-- 4️⃣ قسم الكتالوج -->
-        <section id="catalog-section" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-sm">
-            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-                <div>
-                    <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                        <i data-lucide="boxes" class="w-4.5 h-4.5 text-amber-500"></i>
-                        <span>نزل أصناف للفاتورة من الكتالوج</span>
-                    </h3>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">اكتب اسم الصنف أو كوده عشان ينزل فوراً في الفاتورة.</p>
-                </div>
-            </div>
-
-            <div class="relative">
-                <div class="relative flex items-center gap-2">
-                    <div class="relative flex-1">
-                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-blue-500">
-                            <i data-lucide="search" class="w-5 h-5"></i>
-                        </div>
-                        <input type="text" id="item-code-input" oninput="InvoiceModule.searchCatalogItemsForInvoice(this.value)" placeholder="🔍 اكتب اسم الصنف هنا عشان ينزل في الفاتورة على طول..." class="w-full bg-slate-50 dark:bg-slate-950 border-2 border-blue-500/30 dark:border-blue-500/20 pr-12 pl-4 py-3.5 rounded-xl text-xs sm:text-sm font-black text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-sm transition">
-                    </div>
-
-                    <button onclick="window.location.href='catalog.html'" title="إدارة الكتالوج والأصناف والمخزون" class="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 transition flex items-center justify-center shadow-sm shrink-0 active:scale-95">
-                        <i data-lucide="boxes" class="w-5 h-5"></i>
-                    </button>
-                </div>
-
-                <div id="catalog-dropdown" class="absolute top-full right-0 left-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 max-h-56 overflow-y-auto hidden mt-1.5 custom-scrollbar"></div>
-            </div>
-        </section>
-
-        <!-- 5️⃣ قائمة الأصناف المسجلة داخل الفاتورة -->
-        <section id="invoice-main-section" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-sm">
-            <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
-                <i data-lucide="list-checks" class="w-4.5 h-4.5 text-blue-500"></i>
-                <span>بنود وأصناف الفاتورة الحالية</span>
-            </h3>
-            <div id="invoice-items-container" class="space-y-3 pt-1"></div>
-        </section>
-
-    </main>
-
-    <!-- إعدادات سهولة الاستخدام وتخصيص لوحة التحكم -->
-    <div id="display-settings-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="display-settings-title">
-        <section class="display-settings-panel w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
-            <header class="display-settings-head">
-                <div><span class="settings-eyebrow">WORKSPACE PERSONALIZATION</span><h2 id="display-settings-title">تخصيص مساحة العمل</h2><p>اختر طريقة العرض والمؤشرات التي تحتاجها فقط.</p></div>
-                <button type="button" onclick="PreferencesModule.closeSettings()" class="settings-close" aria-label="إغلاق">×</button>
-            </header>
-            <div class="display-settings-body">
-                <div class="mode-choice-grid">
-                    <label class="mode-choice"><input type="radio" name="workspace-mode" value="easy"><span class="mode-choice-icon">✦</span><strong>الوضع السهل</strong><small>أزرار مباشرة وقوائم أقل وتركيز على الشغل اليومي.</small></label>
-                    <label class="mode-choice"><input type="radio" name="workspace-mode" value="advanced"><span class="mode-choice-icon">▦</span><strong>الوضع الاحترافي</strong><small>كل الأدوات والإحصائيات والتفاصيل في مكان واحد.</small></label>
-                </div>
-                <div class="settings-section-title"><div><strong>محتويات لوحة التحكم</strong><small>إخفاء العنصر لا يحذف بياناته ولا يوقف حساباته.</small></div><button type="button" class="settings-reset" onclick="PreferencesModule.resetWidgets()">إعادة الافتراضي</button></div>
-                <div class="widget-preferences-grid">
-                    <label><input type="checkbox" data-widget-toggle="monthlyOps"><span>عمليات الشهر</span></label>
-                    <label><input type="checkbox" data-widget-toggle="debts"><span>إجمالي الديون</span></label>
-                    <label><input type="checkbox" data-widget-toggle="advances"><span>أرصدة العربون</span></label>
-                    <label><input type="checkbox" data-widget-toggle="todaySales"><span>مبيعات اليوم</span></label>
-                    <label><input type="checkbox" data-widget-toggle="todayProfit"><span>أرباح اليوم</span></label>
-                    <label><input type="checkbox" data-widget-toggle="clients"><span>عدد العملاء</span></label>
-                    <label><input type="checkbox" data-widget-toggle="dailyChart"><span>الرسم البياني</span></label>
-                </div>
-                <div class="settings-note"><span>ⓘ</span><p>الإعدادات الحالية تُحفظ لهذا الحساب على هذا الجهاز. سيتم ربطها بإعدادات الورشة السحابية بعد توحيد مسار بيانات كل ورشة وقواعد الصلاحيات.</p></div>
-            </div>
-            <footer class="display-settings-footer"><button type="button" class="settings-cancel" onclick="PreferencesModule.closeSettings()">إلغاء</button><button type="button" class="settings-save" onclick="PreferencesModule.saveSettings()">حفظ التخصيص</button></footer>
-        </section>
-    </div>
-
-    <!-- 📦 نافذة خيارات النسخ الاحتياطي -->
-    <div id="backup-options-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col">
-            <div class="bg-slate-50 dark:bg-slate-950 p-4 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 shrink-0">
-                <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                    <i data-lucide="database" class="w-4 h-4 text-emerald-500"></i> إدارة النسخ الاحتياطي
-                </h3>
-                <button onclick="closeBackupOptionsModal()" class="text-rose-500 font-black text-lg px-2">✕</button>
-            </div>
-
-            <div class="p-5 space-y-3 text-xs font-bold">
-                <p class="text-slate-500 dark:text-slate-400 text-center mb-2">اختر الإجراء المناسب للبيانات:</p>
-                
-                <button onclick="exportSystemBackup(); closeBackupOptionsModal();" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-xl flex items-center justify-center gap-2 transition shadow-md">
-                    <i data-lucide="download" class="w-4.5 h-4.5"></i>
-                    <span>تحميل نسخة احتياطية (تصدير)</span>
-                </button>
-
-                <button onclick="document.getElementById('restore-backup-file-input').click(); closeBackupOptionsModal();" class="w-full bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl flex items-center justify-center gap-2 transition shadow-md">
-                    <i data-lucide="upload" class="w-4.5 h-4.5"></i>
-                    <span>رفع ملف نسخة احتياطية (استرجاع)</span>
-                </button>
-            </div>
-
-            <div class="bg-slate-50 dark:bg-slate-950 p-3 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-                <button onclick="closeBackupOptionsModal()" class="bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white px-4 py-2 rounded-xl text-xs font-bold">إغلاق</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function openBackupOptionsModal() {
-            document.getElementById('backup-options-modal').classList.remove('hidden');
-        }
-        function closeBackupOptionsModal() {
-            document.getElementById('backup-options-modal').classList.add('hidden');
-        }
-        function scrollToSection(id) {
-            const el = document.getElementById(id);
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }
-    </script>
-
-    <!-- استدعاء ملفات السكريبت بالترتيب الصحيح -->
-    <script src="assets/js/firebase-config.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="catalog-data.js"></script>
-    <script src="assets/js/core.js"></script>
-    <script src="assets/js/theme.js"></script>
-    <script src="assets/js/finance.js"></script>
-    <script src="assets/js/clients.js"></script>
-    <script src="assets/js/invoices.js"></script>
-    <script src="assets/js/payments.js"></script>
-    <script src="assets/js/dashboard.js"></script>
-    <script src="assets/js/charts.js"></script>
-    <script src="assets/js/invoice-sharing.js"></script>
-    <script src="assets/js/preferences.js"></script>
-    <script src="assets/js/app.js"></script>
-</body>
-</html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101b2d">
+<meta name="description" content="مركز Ali Saber System لإدارة الورش والمنصة والأدوات والتوثيق.">
+<title>مركز النظام | Ali Saber System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root{color-scheme:light;--navy:#101b2d;--navy2:#172943;--ink:#172338;--muted:#728198;--line:#e5eaf2;--bg:#f4f6fa;--white:#fff;--violet:#6658e8;--violet2:#5144d5;--cyan:#2c9bb8;--green:#13845b;--shadow:0 16px 44px rgba(21,38,67,.07)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Cairo","IBM Plex Sans Arabic",sans-serif}a{color:inherit;text-decoration:none}button,input{font:inherit}.shell{min-height:100vh;display:grid;grid-template-columns:270px minmax(0,1fr)}
+.sidebar{background:linear-gradient(180deg,#101b2d,#14233a);color:#dce5f2;padding:25px 18px;display:flex;flex-direction:column;gap:28px;position:sticky;top:0;height:100vh}.brand{display:flex;align-items:center;gap:12px;padding:3px 8px}.brand-mark{width:45px;height:45px;border-radius:15px;background:linear-gradient(145deg,#a59cff,#594be0);display:grid;place-items:center;color:#fff;font-size:21px;font-weight:900;box-shadow:0 9px 24px #6558e855}.brand strong{display:block;font-size:15px;color:white}.brand small{font-size:10px;color:#91a3bd}.side-caption{font-size:10px;color:#8294ae;font-weight:800;padding:0 12px;margin:0 0 8px}.side-nav{display:grid;gap:5px}.side-nav a{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:12px;color:#c4d0e0;font-size:12px;transition:.18s}.side-nav a:hover,.side-nav a.active{background:#263956;color:#fff}.side-nav i{width:18px;height:18px}.side-bottom{margin-top:auto;border:1px solid #344660;border-radius:15px;padding:14px;color:#9fb0c7;font-size:10px;line-height:1.9}.side-bottom b{display:block;color:#fff;font-size:11px;margin-bottom:3px}
+.main{min-width:0}.topbar{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,4vw,48px);gap:18px}.crumb{font-size:11px;color:var(--muted)}.crumb b{color:var(--ink)}.top-right{display:flex;align-items:center;gap:10px}.env{display:inline-flex;align-items:center;gap:7px;background:#f0efff;color:#5145d6;border-radius:30px;padding:7px 11px;font-size:10px;font-weight:800}.env:before{content:"";width:6px;height:6px;border-radius:50%;background:#6a5be9}.avatar{width:34px;height:34px;border-radius:12px;background:#e9e7ff;color:#5145d6;display:grid;place-items:center;font-weight:900}
+.content{max-width:1500px;margin:auto;padding:30px clamp(18px,4vw,48px) 60px}.hero{position:relative;overflow:hidden;background:linear-gradient(115deg,#101b2d 0%,#1c3150 68%,#263d63 100%);color:#fff;border-radius:24px;padding:clamp(25px,4vw,44px);display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,300px);gap:25px;align-items:center;box-shadow:0 18px 48px #16294622}.hero:before,.hero:after{content:"";position:absolute;border:1px solid #ffffff13;border-radius:50%;pointer-events:none}.hero:before{width:420px;height:420px;left:-110px;top:-250px;box-shadow:0 0 0 45px #ffffff07,0 0 0 90px #ffffff05}.hero:after{width:230px;height:230px;right:45%;bottom:-190px;box-shadow:0 0 0 35px #ffffff07}.hero-copy,.hero-art{position:relative;z-index:1}.eyebrow{font-size:10px;letter-spacing:1.2px;color:#bcb5ff;font-weight:900}.hero h1{font-size:clamp(25px,3.3vw,39px);line-height:1.45;margin:10px 0 9px;font-weight:900}.hero p{font-size:12px;line-height:2;color:#c3d0e1;max-width:690px;margin:0}.hero-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:11px;font-size:11px;font-weight:800;transition:.18s;border:1px solid transparent}.btn:hover{transform:translateY(-2px)}.btn-primary{background:#7568f0;color:#fff;box-shadow:0 8px 18px #7568f044}.btn-ghost{border-color:#ffffff35;color:#fff;background:#ffffff0b}.hero-art{justify-self:center;width:210px;height:170px;display:grid;place-items:center}.orbit{width:158px;height:158px;border:1px solid #ffffff26;border-radius:44px;transform:rotate(12deg);display:grid;place-items:center;background:linear-gradient(145deg,#ffffff13,#ffffff03);box-shadow:0 0 0 18px #ffffff08,0 22px 55px #0003}.orbit-inner{width:90px;height:90px;border-radius:28px;background:linear-gradient(145deg,#a69dff,#6254e4);display:grid;place-items:center;transform:rotate(-12deg);box-shadow:0 14px 30px #6558e855}.orbit-inner i{width:42px;height:42px;color:white}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin:30px 0 14px}.section-head h2{font-size:17px;margin:0;font-weight:900}.section-head p{font-size:10px;color:var(--muted);margin:4px 0 0}.search-wrap{position:relative;width:min(100%,330px)}.search-wrap i{position:absolute;right:13px;top:50%;transform:translateY(-50%);width:16px;color:#8794a8}.search-wrap input{width:100%;height:43px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:0 40px 0 13px;outline:0;font-size:11px}.search-wrap input:focus{border-color:#9a91f5;box-shadow:0 0 0 3px #6558e814}
+.quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.quick-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;display:flex;align-items:center;gap:13px;box-shadow:0 5px 18px #192b4606;transition:.2s}.quick-card:hover,.link-card:hover{transform:translateY(-3px);border-color:#c8c2ff;box-shadow:var(--shadow)}.quick-icon{width:43px;height:43px;border-radius:13px;background:#f0efff;color:#5d50df;display:grid;place-items:center;flex:none}.quick-icon i{width:20px;height:20px}.quick-card b{display:block;font-size:11px}.quick-card small{display:block;color:var(--muted);font-size:9px;margin-top:3px}
+.groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}.group{background:#fff;border:1px solid var(--line);border-radius:18px;padding:19px;box-shadow:0 5px 20px #192b4605;min-width:0}.group-head{display:flex;align-items:center;gap:11px;margin-bottom:14px}.group-icon{width:39px;height:39px;border-radius:12px;display:grid;place-items:center;background:#edf1ff;color:#5365d9}.group-icon.green{background:#e8f7f0;color:#16845a}.group-icon.amber{background:#fff5e6;color:#b87516}.group-icon.cyan{background:#e8f6fa;color:#24849e}.group-head h3{font-size:13px;margin:0;font-weight:900}.group-head p{font-size:9px;color:var(--muted);margin:2px 0 0}.link-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.link-card{display:flex;align-items:center;gap:9px;padding:11px;border:1px solid #edf0f5;border-radius:12px;min-width:0;transition:.18s;background:#fff}.link-card i{width:17px;height:17px;color:#6a5ce5;flex:none}.link-card span{min-width:0}.link-card b{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.link-card small{display:block;color:var(--muted);font-size:8px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.link-card .arrow{margin-right:auto;color:#9aa5b5;width:13px;height:13px}
+.notice{margin-top:18px;border:1px solid #dfe5ef;background:#fff;border-radius:15px;padding:14px 16px;display:flex;gap:11px;align-items:flex-start;color:#66758a;font-size:10px;line-height:1.9}.notice i{width:18px;color:#6b5ee8;flex:none;margin-top:2px}.notice b{color:#27364c}.footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#91a0b3;font-size:9px;padding:25px 3px 0}.quick-card[hidden],.link-card[hidden]{display:none!important}.empty-search{display:none;background:#fff;border:1px dashed var(--line);border-radius:14px;padding:25px;text-align:center;color:var(--muted);font-size:11px;margin-top:12px}
+@media(max-width:1100px){.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{grid-template-columns:minmax(0,1fr) 190px}.hero-art{width:170px}}
+@media(max-width:800px){.shell{grid-template-columns:1fr}.sidebar{display:none}.hero{grid-template-columns:1fr}.hero-art{display:none}.content{padding-top:20px}.groups{grid-template-columns:1fr}}
+@media(max-width:520px){.topbar{height:60px;padding:0 14px}.content{padding:16px 13px 35px}.hero{border-radius:18px;padding:23px 19px}.hero h1{font-size:25px}.hero p{font-size:11px}.hero-actions .btn{flex:1}.section-head{align-items:stretch;flex-direction:column}.search-wrap{width:100%}.quick-grid{grid-template-columns:1fr 1fr;gap:8px}.quick-card{padding:12px;gap:9px}.quick-icon{width:36px;height:36px;border-radius:11px}.quick-card b{font-size:10px}.quick-card small{font-size:8px}.group{padding:14px}.link-list{grid-template-columns:1fr}.env{font-size:8px}.footer{font-size:8px}}
+</style></head>
+<body>
+<div class="shell">
+<aside class="sidebar">
+  <a class="brand" href="index.html"><span class="brand-mark">A</span><span><strong>Ali Saber System</strong><small>Workshop Management OS</small></span></a>
+  <div><p class="side-caption">مركز النظام</p><nav class="side-nav">
+    <a class="active" href="#top"><i data-lucide="layout-dashboard"></i>نظرة عامة</a>
+    <a href="#workshop"><i data-lucide="wrench"></i>إدارة الورشة</a>
+    <a href="#platform"><i data-lucide="network"></i>إدارة المنصة</a>
+    <a href="#tools"><i data-lucide="briefcase-business"></i>الأدوات</a>
+    <a href="#docs"><i data-lucide="book-open"></i>المعرفة والتوثيق</a>
+  </nav></div>
+  <div class="side-bottom"><b>بوابة النظام الرئيسية</b>نقطة دخول موحدة للوصول إلى تطبيق الورشة، إدارة المنصة، الأدوات، والوثائق. صلاحيات كل مساحة تظل مستقلة.</div>
+</aside>
+<div class="main" id="top">
+<header class="topbar"><div class="crumb">ALI SABER SYSTEM <span> / </span><b>مركز النظام</b></div><div class="top-right"><span class="env">STAGING · ZERO COST</span><span class="avatar">AS</span></div></header>
+<main class="content">
+<section class="hero">
+ <div class="hero-copy"><div class="eyebrow">WORKSHOP MANAGEMENT ECOSYSTEM</div><h1>كل أدوات نظامك.<br>في مكان واحد.</h1><p>مركز موحد لإدارة الورش والعملاء والمبيعات والمخزون، ومتابعة حسابات الورش وعضوياتها، والوصول إلى أدوات التشغيل والتوثيق من واجهة واحدة واضحة وسريعة.</p>
+  <div class="hero-actions"><a class="btn btn-primary" href="workshop.html"><i data-lucide="panels-top-left"></i>دخول نظام الورشة</a><a class="btn btn-ghost" href="platform/public/platform-admin.html"><i data-lucide="shield-check"></i>إدارة المنصة</a></div>
+ </div><div class="hero-art"><div class="orbit"><div class="orbit-inner"><i data-lucide="workflow"></i></div></div></div>
+</section>
+<section>
+ <div class="section-head"><div><h2>وصول سريع</h2><p>أهم المساحات التي تستخدمها بشكل متكرر.</p></div><label class="search-wrap"><i data-lucide="search"></i><input id="link-search" type="search" placeholder="ابحث عن صفحة أو أداة..." aria-label="ابحث في روابط النظام"></label></div>
+ <div class="quick-grid searchable">
+  <a class="quick-card" data-search="لوحة الورشة dashboard الرئيسية العملاء الفواتير المبيعات" href="workshop.html"><span class="quick-icon"><i data-lucide="panels-top-left"></i></span><span><b>لوحة إدارة الورشة</b><small>العملاء والمبيعات والحسابات</small></span></a>
+  <a class="quick-card" data-search="الكتالوج المخزون المنتجات الاصناف" href="catalog.html"><span class="quick-icon"><i data-lucide="package-search"></i></span><span><b>الكتالوج والمخزون</b><small>الأصناف والأسعار والأقسام</small></span></a>
+  <a class="quick-card" data-search="مدير المنصة الورش العضويات تفعيل ايقاف" href="platform/public/platform-admin.html"><span class="quick-icon"><i data-lucide="shield-check"></i></span><span><b>لوحة مدير المنصة</b><small>إدارة الورش والعضويات</small></span></a>
+  <a class="quick-card" data-search="تسجيل ورشة مالك حساب جديد انشاء" href="platform/public/workshop-register.html"><span class="quick-icon"><i data-lucide="user-plus"></i></span><span><b>تسجيل ورشة جديدة</b><small>إنشاء حساب مالك ورشة</small></span></a>
+ </div>
+ <div id="no-results" class="empty-search">لا توجد روابط مطابقة لعبارة البحث.</div>
+</section>
+<section id="workshop">
+ <div class="section-head"><div><h2>إدارة الورشة</h2><p>مساحة التشغيل اليومية لصاحب الورشة وفريق العمل.</p></div></div>
+ <div class="groups">
+  <article class="group"><div class="group-head"><span class="group-icon"><i data-lucide="store"></i></span><span><h3>التشغيل والمبيعات</h3><p>العمليات الأساسية داخل الورشة</p></span></div><div class="link-list">
+   <a class="link-card" href="workshop.html"><i data-lucide="layout-dashboard"></i><span><b>لوحة التحكم</b><small>ملخص العمل ومؤشرات الأداء</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="workshop.html?action=clients"><i data-lucide="users"></i><span><b>إدارة العملاء</b><small>ملفات العملاء والبحث</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="workshop.html"><i data-lucide="file-text"></i><span><b>الفواتير والعمليات</b><small>إنشاء ومتابعة فواتير البيع</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="workshop.html?action=payment"><i data-lucide="wallet"></i><span><b>المدفوعات والحسابات</b><small>التحصيل والمقدمات والديون</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+  </div></article>
+  <article class="group"><div class="group-head"><span class="group-icon green"><i data-lucide="boxes"></i></span><span><h3>المخزون والأدوات</h3><p>إدارة المنتجات وتجهيزات العمل</p></span></div><div class="link-list">
+   <a class="link-card" href="catalog.html"><i data-lucide="package"></i><span><b>إدارة الكتالوج</b><small>إضافة وتعديل وحذف الأصناف</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="catalog.html"><i data-lucide="tags"></i><span><b>الأقسام والأسعار</b><small>تنظيم المنتجات وتصنيفها</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="print_images.html"><i data-lucide="printer"></i><span><b>أداة طباعة الصور</b><small>طباعة صورة أو مستند مباشرة</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="workshop.html?action=backup"><i data-lucide="database-backup"></i><span><b>النسخ الاحتياطي</b><small>تصدير واسترجاع بيانات الورشة</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+  </div></article>
+ </div>
+</section>
+<section id="platform">
+ <div class="section-head"><div><h2>إدارة المنصة</h2><p>إدارة الحسابات والورش المستقلة والتحكم في الوصول.</p></div></div>
+ <div class="groups">
+  <article class="group"><div class="group-head"><span class="group-icon amber"><i data-lucide="shield"></i></span><span><h3>الإدارة المركزية</h3><p>مساحات مخصصة لمدير المنصة</p></span></div><div class="link-list">
+   <a class="link-card" href="platform/public/platform-admin.html"><i data-lucide="shield-check"></i><span><b>لوحة مدير المنصة</b><small>تسجيل الدخول وإدارة الورش</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="platform/public/workshop-register.html"><i data-lucide="user-round-plus"></i><span><b>تسجيل صاحب ورشة</b><small>إنشاء حساب جديد وإظهار UID</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="platform/STAGING_DEPLOYMENT.md"><i data-lucide="cloud-upload"></i><span><b>دليل النشر التجريبي</b><small>إعدادات بيئة Staging</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="platform/ZERO_COST_GUIDE_AR.md"><i data-lucide="badge-check"></i><span><b>دليل التشغيل المجاني</b><small>حدود الخطة وخطوات التشغيل</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+  </div></article>
+  <article class="group"><div class="group-head"><span class="group-icon cyan"><i data-lucide="sliders-horizontal"></i></span><span><h3>إعدادات وتجهيز النظام</h3><p>تخصيص بيئة العمل ومراجعة الإعدادات</p></span></div><div class="link-list">
+   <a class="link-card" href="workshop.html?action=settings"><i data-lucide="settings-2"></i><span><b>تخصيص لوحة الورشة</b><small>الوضع السهل وإظهار الأدوات المطلوبة</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="ADMIN-QUICK-SETUP-AR.md"><i data-lucide="clipboard-list"></i><span><b>دليل إعداد المدير</b><small>إعداد أول مدير للمنصة</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="architecture/MULTI_TENANT_ARCHITECTURE.md"><i data-lucide="network"></i><span><b>معمارية تعدد الورش</b><small>عزل البيانات والصلاحيات</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+   <a class="link-card" href="architecture/EASY_MODE_AND_PERSONALIZATION.md"><i data-lucide="panels-top-left"></i><span><b>دليل الوضع السهل</b><small>تخصيص واجهة صاحب الورشة</small></span><i class="arrow" data-lucide="arrow-up-left"></i></a>
+  </div></article>
+ </div>
+</section>
+<section id="tools">
+ <div class="section-head"><div><h2>الأدوات والمراجع</h2><p>روابط مساعدة للوصول إلى ملفات النظام الأساسية.</p></div></div>
+ <div class="quick-grid searchable">
+  <a class="quick-card" data-search="سجل التحديثات changelog الاصدارات" href="CHANGELOG.md"><span class="quick-icon"><i data-lucide="history"></i></span><span><b>سجل التحديثات</b><small>الإصدارات والتحسينات</small></span></a>
+  <a class="quick-card" data-search="تعريف النظام readme معلومات" href="README.md"><span class="quick-icon"><i data-lucide="info"></i></span><span><b>عن النظام</b><small>نظرة عامة ومكونات المشروع</small></span></a>
+  <a class="quick-card" data-search="دليل المنصة architecture technical readme" href="platform/README.md"><span class="quick-icon"><i data-lucide="book-open-check"></i></span><span><b>دليل المنصة التقني</b><small>مكونات المنصة وإعداداتها</small></span></a>
+  <a class="quick-card" data-search="github المستودع المصدر" href="https://github.com/alisaberhanafy/AliSaberHanafySystem" target="_blank" rel="noopener"><span class="quick-icon"><i data-lucide="github"></i></span><span><b>مستودع GitHub</b><small>ملفات المشروع وسجل الكود</small></span></a>
+ </div>
+</section>
+<section id="docs">
+ <div class="notice"><i data-lucide="shield-alert"></i><div><b>تنبيه صلاحيات وأمان:</b> هذه الصفحة دليل تنقل فقط. الروابط لا تتجاوز تسجيل الدخول أو قواعد Firebase، ولا تمنح صاحب الورشة صلاحيات مدير المنصة. كما أن روابط الأدوات الداخلية لا تعني أن كل وظيفة متاحة لكل حساب.</div></div>
+</section>
+<footer class="footer"><span>© 2026 Ali Saber System · Workshop Management OS</span><span>واجهة موحدة · صلاحيات منفصلة · تصميم متجاوب</span></footer>
+</main></div></div>
+<script>
+  if (window.lucide) lucide.createIcons();
+  const search = document.getElementById('link-search');
+  const cards = [...document.querySelectorAll('[data-search], .link-card')];
+  const noResults = document.getElementById('no-results');
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLocaleLowerCase();
+    let visible = 0;
+    cards.forEach(card => {
+      const haystack = ((card.dataset.search || '') + ' ' + card.innerText).toLocaleLowerCase();
+      const show = !q || haystack.includes(q);
+      card.hidden = !show;
+      if (show) visible++;
+    });
+    noResults.style.display = visible ? 'none' : 'block';
+  });
+</script>
+</body></html>

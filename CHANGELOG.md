@@ -1,3 +1,12 @@
+## v1.5.7 — Central System Portal
+
+- Added a modern responsive system homepage as the default `index.html` entry point.
+- Moved the existing workshop application intact to `workshop.html` and added a clear return link to the portal.
+- Organized working links into workshop operations, platform administration, tools, and documentation.
+- Added global link search, quick-access cards, responsive navigation, and explicit staging environment labeling.
+- Added authenticated deep links for backup, workspace personalization, client search, and quick payment.
+- Updated automated checks for the new portal and preserved existing workshop authentication/preferences tests.
+
 ## v1.5.6 — Smart Workshop Management
 
 - Replaced duplicate activate/stop controls with one context-aware action based on the combined workshop directory and billing state.

@@ -13,3 +13,12 @@
 ## واجهات الإدارة المحسّنة
 - `platform/public/platform-admin.html`: لوحة إدارة متجاوبة بهوية موحدة.
 - `platform/public/workshop-register.html`: بوابة تسجيل محسّنة ومتوافقة مع الهواتف.
+
+
+## مركز النظام الرئيسي
+- `index.html`: البوابة الرئيسية وروابط جميع مساحات النظام.
+- `workshop.html`: تطبيق إدارة الورشة الحالي (تم نقله من index.html للحفاظ على وظائفه وملفاته).
+- `catalog.html`: إدارة الكتالوج والمخزون.
+- `platform/public/platform-admin.html`: لوحة مدير المنصة.
+- `platform/public/workshop-register.html`: تسجيل حساب صاحب ورشة.
+- `print_images.html`: أداة الطباعة.

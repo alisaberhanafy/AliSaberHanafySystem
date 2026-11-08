@@ -1,7 +1,7 @@
 const fs = require('fs');
 const assert = require('assert');
 const rules = JSON.parse(fs.readFileSync('firebase/database.rules.json', 'utf8'));
-const index = fs.readFileSync('index.html', 'utf8');
+const index = fs.readFileSync('workshop.html', 'utf8');
 const catalog = fs.readFileSync('catalog.html', 'utf8');
 const auth = fs.readFileSync('assets/js/auth.js', 'utf8');
 

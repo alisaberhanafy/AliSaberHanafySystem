@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "ali_saber_system_data": {
+      ".read": "auth != null && (auth.uid == 'REPLACE_WITH_OWNER_UID' || (root.child('userRoles').child(auth.uid).child('active').val() == true && (root.child('userRoles').child(auth.uid).child('role').val() == 'owner' || root.child('userRoles').child(auth.uid).child('role').val() == 'admin' || root.child('userRoles').child(auth.uid).child('role').val() == 'editor' || root.child('userRoles').child(auth.uid).child('role').val() == 'viewer')))",
+      ".write": "auth != null && (auth.uid == 'REPLACE_WITH_OWNER_UID' || (root.child('userRoles').child(auth.uid).child('active').val() == true && (root.child('userRoles').child(auth.uid).child('role').val() == 'owner' || root.child('userRoles').child(auth.uid).child('role').val() == 'admin' || root.child('userRoles').child(auth.uid).child('role').val() == 'editor')))"
+    },
+    "userRoles": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.uid == 'REPLACE_WITH_OWNER_UID')",
+        ".write": "auth != null && auth.uid == 'REPLACE_WITH_OWNER_UID'"
+      }
+    }
+  }
+}

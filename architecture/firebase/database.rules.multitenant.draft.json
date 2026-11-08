@@ -1,0 +1,71 @@
+{
+  "rules": {
+    "tenantMemberships": {
+      "$tenantId": {
+        "$uid": {
+          ".read": "auth != null && (auth.uid == $uid || auth.token.platformAdmin == true)",
+          ".write": false
+        }
+      }
+    },
+    "tenants": {
+      "$tenantId": {
+        ".read": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'active' || root.child('platformBilling').child($tenantId).child('status').val() == 'trial')",
+        "profile": {
+          ".write": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'active' || root.child('platformBilling').child($tenantId).child('status').val() == 'trial') && (root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'owner' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'admin')"
+        },
+        "settings": {
+          ".write": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'active' || root.child('platformBilling').child($tenantId).child('status').val() == 'trial') && (root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'owner' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'admin')"
+        },
+        "auditLog": {
+          ".write": false
+        },
+        "clients": {
+          "$id": {
+            ".write": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'active' || root.child('platformBilling').child($tenantId).child('status').val() == 'trial') && (root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'owner' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'admin' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'editor')"
+          }
+        },
+        "invoices": {
+          "$id": {
+            ".write": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'active' || root.child('platformBilling').child($tenantId).child('status').val() == 'trial') && (root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'owner' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'admin' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'editor')"
+          }
+        },
+        "payments": {
+          "$id": {
+            ".write": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'active' || root.child('platformBilling').child($tenantId).child('status').val() == 'trial') && (root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'owner' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'admin' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'editor')"
+          }
+        },
+        "catalogItems": {
+          "$id": {
+            ".write": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'active' || root.child('platformBilling').child($tenantId).child('status').val() == 'trial') && (root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'owner' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'admin' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'editor')"
+          }
+        },
+        "categories": {
+          "$id": {
+            ".write": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'active' || root.child('platformBilling').child($tenantId).child('status').val() == 'trial') && (root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'owner' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'admin' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'editor')"
+          }
+        },
+        "inventoryMovements": {
+          "$id": {
+            ".write": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'active' || root.child('platformBilling').child($tenantId).child('status').val() == 'trial') && (root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'owner' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'admin' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'editor')"
+          }
+        },
+        "backups": {
+          "$id": {
+            ".write": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'active' || root.child('platformBilling').child($tenantId).child('status').val() == 'trial') && (root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'owner' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'admin')"
+          }
+        }
+      }
+    },
+    "platform": {
+      ".read": false,
+      ".write": false
+    },
+    "platformBilling": {
+      "$tenantId": {
+        ".read": false,
+        ".write": false
+      }
+    }
+  }
+}

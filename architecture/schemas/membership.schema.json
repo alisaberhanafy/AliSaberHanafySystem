@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tenant membership",
+  "type": "object",
+  "required": [
+    "uid",
+    "tenantId",
+    "active",
+    "role",
+    "joinedAt"
+  ],
+  "properties": {
+    "uid": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tenantId": {
+      "type": "string",
+      "minLength": 3
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "role": {
+      "enum": [
+        "owner",
+        "admin",
+        "editor",
+        "viewer"
+      ]
+    },
+    "joinedAt": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

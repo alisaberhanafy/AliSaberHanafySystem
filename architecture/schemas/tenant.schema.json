@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tenant record",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "mode",
+    "createdAt",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{2,63}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 120
+    },
+    "mode": {
+      "enum": [
+        "saas",
+        "dedicated"
+      ]
+    },
+    "status": {
+      "enum": [
+        "provisioning",
+        "active",
+        "suspended",
+        "closed"
+      ]
+    },
+    "createdAt": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ownerUid": {
+      "type": "string",
+      "minLength": 1
+    },
+    "firebaseProjectId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "billingModel": {
+      "enum": [
+        "subscription",
+        "one_time",
+        "both"
+      ]
+    },
+    "planId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

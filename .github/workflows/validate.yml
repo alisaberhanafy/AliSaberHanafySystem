@@ -1,0 +1,28 @@
+name: Validate project
+on:
+  push:
+  pull_request:
+jobs:
+  javascript-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          find assets/js -name '*.js' -print0 | xargs -0 -n1 node --check
+          node --check catalog-data.js
+      - name: Run project tests
+        run: |
+          node tests/finance.test.cjs
+          node tests/auth-config.test.cjs
+          node tests/platform-architecture.test.cjs
+
+      - name: Check platform functions and console
+        run: |
+          node --check platform/functions/index.js
+          node --check platform/public/platform-admin.js
+          node --check platform/scripts/set-platform-admin.js
+          node -e "JSON.parse(require('fs').readFileSync('platform/firebase.staging.json','utf8')); JSON.parse(require('fs').readFileSync('platform/firebase/database.rules.multitenant.draft.json','utf8'))"

@@ -1,0 +1,18 @@
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
+node_modules/
+
+# Firebase credentials and local secrets
+**/service-account*.json
+**/*-adminsdk-*.json
+platform/.env
+platform/functions/node_modules/
+platform/.firebase/
+
+# Never commit Firebase service-account credentials
+**/service-account*.json
+**/*-adminsdk-*.json
+FirebaseSecrets/

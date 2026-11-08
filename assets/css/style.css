@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+
+* {
+    font-family: 'Cairo', sans-serif;
+    box-sizing: border-box;
+}
+
+body.app-body {
+    min-height: 100vh;
+    padding-bottom: 3rem;
+    overflow-x: hidden;
+    width: 100%;
+    margin: 0;
+}
+
+.main-layout {
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    margin-top: 1rem;
+    overflow-x: hidden;
+}
+
+.app-header {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding: 0.35rem 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    width: 100%;
+}
+
+.dark .app-header {
+    background-color: rgba(15, 23, 42, 0.95);
+    border-bottom: 1px solid #1e293b;
+}
+
+.app-header-container {
+    max-width: 80rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.25rem;
+    flex-wrap: nowrap;
+    width: 100%;
+    overflow: hidden;
+}
+
+.header-logo-box {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.header-logo-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background-color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: #ffffff;
+    font-size: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    flex-shrink: 0;
+}
+
+.header-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+}
+
+.header-btn {
+    padding: 0.35rem 0.45rem;
+    border-radius: 0.5rem;
+    background-color: #f1f5f9;
+    color: #334155;
+    transition: all 0.2s;
+    border: 1px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.dark .header-btn {
+    background-color: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.header-btn:hover {
+    background-color: #e2e8f0;
+}
+
+.dark .header-btn:hover {
+    background-color: #334155;
+}
+
+.header-btn-text {
+    display: none;
+}
+
+@media (min-width: 1280px) {
+    .header-btn-text {
+        display: inline;
+        margin-right: 0.25rem;
+    }
+}
+
+.icon-sm {
+    width: 0.95rem;
+    height: 0.95rem;
+    flex-shrink: 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 10px;
+}

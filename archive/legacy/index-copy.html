@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALI SABER SYSTEM - المنظومة السحابية المتكاملة</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Firebase App & Realtime Database SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <!-- html2pdf & html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- الملفات الخارجية -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen custom-scrollbar pb-12 overflow-x-hidden">
+
+    <!-- مؤشر حالة الاتصال السحابي بفايربيز -->
+    <div id="firebase-status-banner" class="bg-amber-500/10 border-b border-amber-500/20 text-amber-600 dark:text-amber-400 py-1.5 text-[11px] font-bold px-4 flex items-center justify-start gap-2">
+        <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0" id="firebase-status-dot"></span>
+        <span id="firebase-status-text">جاري الاتصال بقاعدة بيانات Firebase السحابية...</span>
+    </div>
+
+    <!-- 1️⃣ الشريط العلوي -->
+    <header class="app-header">
+        <div class="app-header-container">
+            <div class="header-logo-box">
+                <div class="header-logo-icon">AS</div>
+                <div class="leading-tight truncate">
+                    <h1 class="font-black text-[11px] sm:text-xs text-slate-900 dark:text-white tracking-wide truncate">ALI SABER SYSTEM</h1>
+                    <p class="text-[7.5px] sm:text-[8px] text-slate-500 dark:text-slate-400 font-bold truncate">عزب القصر</p>
+                </div>
+            </div>
+
+            <div class="header-actions-group">
+                <input type="file" id="restore-backup-file-input" class="hidden" accept=".json" onchange="importSystemBackup(event)">
+                
+                <button onclick="ThemeModule.toggleTheme()" title="تغيير الوضع" class="header-btn text-slate-700 dark:text-amber-400">
+                    <i data-lucide="sun" id="theme-icon-sun" class="icon-sm hidden dark:inline"></i>
+                    <i data-lucide="moon" id="theme-icon-moon" class="icon-sm inline dark:hidden text-slate-700"></i>
+                    <span class="header-btn-text" id="theme-text">الوضع النهاري</span>
+                </button>
+
+                <button onclick="scrollToSection('dashboard-section')" title="الرئيسية" class="header-btn">
+                    <i data-lucide="house" class="icon-sm text-blue-500 dark:text-blue-400"></i>
+                    <span class="header-btn-text">الرئيسية</span>
+                </button>
+
+                <button onclick="PaymentModule.openPaymentModal()" title="الدفع السريع" class="header-btn">
+                    <i data-lucide="dollar-sign" class="icon-sm text-emerald-600 dark:text-emerald-400"></i>
+                    <span class="header-btn-text">الدفع السريع</span>
+                </button>
+
+                <button onclick="ClientModule.openAllClientsModal()" title="البحث عن عميل" class="header-btn">
+                    <i data-lucide="search" class="icon-sm text-indigo-600 dark:text-indigo-400"></i>
+                    <span class="header-btn-text">البحث عن عميل</span>
+                </button>
+
+                <button onclick="window.location.href='catalog.html'" title="إدارة الكتالوج" class="header-btn">
+                    <i data-lucide="boxes" class="icon-sm text-amber-600 dark:text-amber-400"></i>
+                    <span class="header-btn-text">إدارة الكتالوج</span>
+                </button>
+
+                <button onclick="openBackupOptionsModal()" title="النسخ الاحتياطي" class="header-btn text-slate-700 dark:text-emerald-400">
+                    <i data-lucide="database" class="icon-sm"></i>
+                    <span class="header-btn-text">النسخ الاحتياطي</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-3 sm:px-4 mt-6 space-y-6">
+
+        <!-- 2️⃣ قسم الإحصائيات والأزرار الرئيسية -->
+        <section id="dashboard-section" class="space-y-4">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h2 class="text-xl font-black text-slate-900 dark:text-white">لوحة التحكم ومؤشرات المبيعات والماليات العامة</h2>
+                        <span class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> متصل بالسحابة لحظياً
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-semibold">عزب القصر • نظام الحسابات والمبيعات.</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                    <button onclick="ClientModule.openAllClientsModal()" class="flex-1 md:flex-none bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/20">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                        <span>عميل حالي</span>
+                    </button>
+
+                    <button onclick="ClientModule.openAddClientModal()" class="flex-1 md:flex-none bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2.5 rounded-xl text-xs border border-slate-300 dark:border-slate-700 flex items-center justify-center gap-2 transition">
+                        <i data-lucide="user-plus" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
+                        <span>عميل جديد</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- كروت المؤشرات المالية (تم إضافة بطاقة عمليات الشهر وتعديل الترتيب) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                <!-- 1. بيعت بكام النهارده (مستلم) -->
+                <div id="today-sales-card" onclick="DashboardModule.openFilteredClientsModal('todaySales')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-blue-500 transition-all flex flex-col justify-between">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
+                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">بيعت بكام النهارده (مستلم)</span>
+                        <span class="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
+                    </div>
+                    <div class="text-left pt-1">
+                        <span id="today-sales-delivered" class="text-xl font-black text-blue-600 dark:text-blue-400 font-mono">0 ج</span>
+                    </div>
+                </div>
+
+                <!-- 2. كسبت كام النهارده (ربحي) -->
+                <div id="today-profit-card" onclick="DashboardModule.openFilteredClientsModal('todayProfit')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
+                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">كسبت كام النهارده (ربحي)</span>
+                        <span class="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
+                    </div>
+                    <div class="text-left pt-1">
+                        <span id="today-profit-delivered" class="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">0 ج</span>
+                    </div>
+                </div>
+
+                <!-- 3. عمليات الشهر (مقسمة لجزئين: العدد والمبلغ) -->
+                <div id="monthly-ops-card-wrapper" onclick="DashboardModule.openMonthlyOperationsModal()" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-blue-500 transition-all flex flex-col justify-between">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
+                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">📊 عمليات الشهر (من يوم 1)</span>
+                        <span class="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg font-bold">التفاصيل 👈</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-center pt-1">
+                        <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <span class="text-[10px] text-slate-400 block font-bold">عدد العمليات</span>
+                            <span id="monthly-ops-count" class="text-sm font-black text-blue-600 dark:text-blue-400 font-mono">0 عملية</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <span class="text-[10px] text-slate-400 block font-bold">إجمالي المبلغ</span>
+                            <span id="monthly-ops-amount" class="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono">0 ج</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. إجمالي الديون -->
+                <div id="debts-card" onclick="DashboardModule.openFilteredClientsModal('debts')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-rose-500 transition-all flex flex-col justify-between">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
+                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">إجمالي الديون (بره)</span>
+                        <span class="text-[10px] bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
+                    </div>
+                    <div class="text-left pt-1">
+                        <span id="total-debts" class="text-xl font-black text-rose-600 dark:text-rose-400 font-mono">0 ج</span>
+                    </div>
+                </div>
+
+                <!-- 5. إجمالي المقدمات -->
+                <div id="advances-card" onclick="DashboardModule.openFilteredClientsModal('advances')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
+                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">إجمالي المقدمات (عربون)</span>
+                        <span class="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
+                    </div>
+                    <div class="text-left pt-1">
+                        <span id="total-advances" class="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">0 ج</span>
+                    </div>
+                </div>
+
+                <!-- 6. إجمالي العملاء -->
+                <div id="clients-card" onclick="ClientModule.openAllClientsModal()" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-indigo-500 transition-all flex flex-col justify-between">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
+                        <span class="text-xs font-black text-slate-700 dark:text-slate-300">إجمالي العملاء المسجلين</span>
+                        <span class="text-[10px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-lg font-bold">إدارة 👈</span>
+                    </div>
+                    <div class="text-left pt-1">
+                        <span id="total-clients-count" class="text-xl font-black text-indigo-600 dark:text-indigo-400 font-mono">0 عميل</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- الرسم البياني الحي -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-3 shadow-sm">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-500 dark:text-blue-400"></i>
+                        <span>مؤشر حركة المبيعات والشغل المستلم اليومي</span>
+                    </h3>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">تحديث تلقائي</span>
+                </div>
+                <div class="h-56 relative w-full">
+                    <canvas id="dailyWorkChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3️⃣ بطاقة العميل النشط -->
+        <section id="clients-section" class="w-full">
+            <div id="active-client-card" class="hidden bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 rounded-xl space-y-3"></div>
+            <div id="no-client-selected-msg" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-800 p-8 rounded-2xl text-center space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto text-xl font-bold">
+                    🔍
+                </div>
+                <h3 class="text-base font-black text-slate-900 dark:text-white">لم يتم اختيار عميل بعد</h3>
+                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 max-w-md mx-auto">اضغط على زر "عميل حالي" من الشريط العلوي أو لوحة التحكم للبدء في إدارة فواتيره وحساباته.</p>
+                <button onclick="ClientModule.openAllClientsModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shadow-blue-600/20">
+                    اختر عميل الآن 👈
+                </button>
+            </div>
+        </section>
+
+        <!-- 4️⃣ قسم الكتالوج -->
+        <section id="catalog-section" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div>
+                    <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                        <i data-lucide="boxes" class="w-4.5 h-4.5 text-amber-500"></i>
+                        <span>نزل أصناف للفاتورة من الكتالوج</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">اكتب اسم الصنف أو كوده عشان ينزل فوراً في الفاتورة.</p>
+                </div>
+            </div>
+
+            <div class="relative">
+                <div class="relative flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-blue-500">
+                            <i data-lucide="search" class="w-5 h-5"></i>
+                        </div>
+                        <input type="text" id="item-code-input" oninput="InvoiceModule.searchCatalogItemsForInvoice(this.value)" placeholder="🔍 اكتب اسم الصنف هنا عشان ينزل في الفاتورة على طول..." class="w-full bg-slate-50 dark:bg-slate-950 border-2 border-blue-500/30 dark:border-blue-500/20 pr-12 pl-4 py-3.5 rounded-xl text-xs sm:text-sm font-black text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-sm transition">
+                    </div>
+
+                    <button onclick="window.location.href='catalog.html'" title="إدارة الكتالوج والأصناف والمخزون" class="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 transition flex items-center justify-center shadow-sm shrink-0 active:scale-95">
+                        <i data-lucide="boxes" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <div id="catalog-dropdown" class="absolute top-full right-0 left-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 max-h-56 overflow-y-auto hidden mt-1.5 custom-scrollbar"></div>
+            </div>
+        </section>
+
+        <!-- 5️⃣ قائمة الأصناف المسجلة داخل الفاتورة -->
+        <section id="invoice-main-section" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-sm">
+            <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+                <i data-lucide="list-checks" class="w-4.5 h-4.5 text-blue-500"></i>
+                <span>بنود وأصناف الفاتورة الحالية</span>
+            </h3>
+            <div id="invoice-items-container" class="space-y-3 pt-1"></div>
+        </section>
+
+    </main>
+
+    <!-- 📦 نافذة خيارات النسخ الاحتياطي -->
+    <div id="backup-options-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col">
+            <div class="bg-slate-50 dark:bg-slate-950 p-4 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="database" class="w-4 h-4 text-emerald-500"></i> إدارة النسخ الاحتياطي
+                </h3>
+                <button onclick="closeBackupOptionsModal()" class="text-rose-500 font-black text-lg px-2">✕</button>
+            </div>
+
+            <div class="p-5 space-y-3 text-xs font-bold">
+                <p class="text-slate-500 dark:text-slate-400 text-center mb-2">اختر الإجراء المناسب للبيانات:</p>
+                
+                <button onclick="exportSystemBackup(); closeBackupOptionsModal();" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-xl flex items-center justify-center gap-2 transition shadow-md">
+                    <i data-lucide="download" class="w-4.5 h-4.5"></i>
+                    <span>تحميل نسخة احتياطية (تصدير)</span>
+                </button>
+
+                <button onclick="document.getElementById('restore-backup-file-input').click(); closeBackupOptionsModal();" class="w-full bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl flex items-center justify-center gap-2 transition shadow-md">
+                    <i data-lucide="upload" class="w-4.5 h-4.5"></i>
+                    <span>رفع ملف نسخة احتياطية (استرجاع)</span>
+                </button>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-950 p-3 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+                <button onclick="closeBackupOptionsModal()" class="bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white px-4 py-2 rounded-xl text-xs font-bold">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openBackupOptionsModal() {
+            document.getElementById('backup-options-modal').classList.remove('hidden');
+        }
+        function closeBackupOptionsModal() {
+            document.getElementById('backup-options-modal').classList.add('hidden');
+        }
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+
+    <!-- استدعاء ملفات السكريبت بالترتيب الصحيح -->
+    <script src="catalog-data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

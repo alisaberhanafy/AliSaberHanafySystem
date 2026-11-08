@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الكتالوج والمخزون المتقدمة - ALI SABER SYSTEM</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Firebase App & Realtime Database SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <!-- الملفات الخارجية -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen custom-scrollbar pb-12 overflow-x-hidden">
+
+    <!-- مؤشر حالة الاتصال السحابي بفايربيز -->
+    <div id="firebase-status-banner" class="bg-amber-500/10 border-b border-amber-500/20 text-amber-600 dark:text-amber-400 text-center py-1.5 text-[11px] font-bold px-4 flex items-center justify-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping" id="firebase-status-dot"></span>
+        <span id="firebase-status-text">جاري الاتصال بقاعدة بيانات Firebase السحابية...</span>
+    </div>
+
+    <!-- 1️⃣ الشريط العلوي -->
+    <header class="app-header">
+        <div class="app-header-container">
+            
+            <!-- اللوجو -->
+            <div class="header-logo-box">
+                <div class="header-logo-icon">AS</div>
+                <div class="leading-tight truncate">
+                    <h1 class="font-black text-[11px] sm:text-xs text-slate-900 dark:text-white tracking-wide truncate">ALI SABER SYSTEM</h1>
+                    <p class="text-[7.5px] sm:text-[8px] text-slate-500 dark:text-slate-400 font-bold truncate">إدارة الكتالوج والمخزون</p>
+                </div>
+            </div>
+
+            <!-- أزرار الهيدر والاختصارات -->
+            <div class="header-actions-group">
+                <input type="file" id="restore-backup-file-input" class="hidden" accept=".json" onchange="importSystemBackup(event)">
+                
+                <a href="index.html" title="الصفحة الرئيسية" class="header-btn text-blue-600 dark:text-blue-400">
+                    <i data-lucide="house" class="icon-sm"></i>
+                    <span class="header-btn-text">الرئيسية</span>
+                </a>
+
+                <button onclick="document.getElementById('restore-backup-file-input').click()" title="رجّع بياناتك" class="header-btn text-slate-700 dark:text-amber-400">
+                    <i data-lucide="upload" class="icon-sm"></i>
+                    <span class="header-btn-text">استرجاع</span>
+                </button>
+
+                <button onclick="exportSystemBackup()" title="نسخة احتياطية" class="header-btn text-slate-700 dark:text-emerald-400">
+                    <i data-lucide="download" class="icon-sm"></i>
+                    <span class="header-btn-text">تصدير</span>
+                </button>
+
+                <button onclick="toggleTheme()" title="تغيير الوضع" class="header-btn text-slate-700 dark:text-amber-400">
+                    <i data-lucide="sun" id="theme-icon-sun" class="icon-sm hidden dark:inline"></i>
+                    <i data-lucide="moon" id="theme-icon-moon" class="icon-sm inline dark:hidden text-slate-700"></i>
+                    <span class="header-btn-text" id="theme-text">الوضع النهاري</span>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-3 sm:px-4 mt-6 space-y-6">
+
+        <!-- 2️⃣ عنوان الصفحة مع شارة التزامن الملونة -->
+        <section class="space-y-4">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h2 class="text-xl font-black text-slate-900 dark:text-white">إدارة المنتجات والأقسام والمخزون</h2>
+                        <span id="sync-status-pill" class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-extrabold px-3 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1.5">
+                            <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span id="sync-status-text">متزامن سحابياً</span>
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-semibold">إضافة وتعديل أسعار الجملة والبيع، متابعة كميات المخزون، وضبط حدود التنبيهات.</p>
+                </div>
+            </div>
+
+            <!-- كروت المؤشرات المجمعة -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                
+                <!-- 1 - الأرباح المتوقعة -->
+                <div class="bg-white dark:bg-slate-900 border-r-4 border-r-indigo-500 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-center w-full mb-2">
+                        <span class="text-xs font-black text-indigo-600 dark:text-indigo-400 tracking-wide">الأرباح المتوقعة</span>
+                        <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                            <i data-lucide="trending-up" class="w-4.5 h-4.5"></i>
+                        </div>
+                    </div>
+                    <div class="text-center w-full">
+                        <h3 id="stat-profit-value" class="text-xl font-black text-indigo-600 dark:text-indigo-400 font-mono">0 ج</h3>
+                    </div>
+                </div>
+
+                <!-- 2 - تكلفة المخزون جملة - قيمة المخزون بيع -->
+                <div class="bg-white dark:bg-slate-900 border-r-4 border-r-slate-500 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-center w-full mb-2">
+                        <span class="text-xs font-black text-slate-700 dark:text-slate-300 tracking-wide">ملخص قيم المخزون</span>
+                        <div class="w-9 h-9 rounded-xl bg-slate-500/10 border border-slate-500/20 flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0">
+                            <i data-lucide="scale" class="w-4.5 h-4.5"></i>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 items-center border-t border-slate-100 dark:border-slate-800/80 pt-2">
+                        <div class="text-center border-l border-slate-200 dark:border-slate-800 pl-1">
+                            <span class="text-[10px] text-slate-400 font-bold block mb-0.5">تكلفة المخزون (جملة):</span>
+                            <h3 id="stat-cost-value" class="text-sm sm:text-base font-black text-slate-800 dark:text-slate-200 font-mono">0 ج</h3>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block mb-0.5">قيمة المخزون (بيع):</span>
+                            <h3 id="stat-sell-value" class="text-sm sm:text-base font-black text-emerald-600 dark:text-emerald-400 font-mono">0 ج</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3 - إجمالي الأقسام - إجمالي الأصناف -->
+                <div class="bg-white dark:bg-slate-900 border-r-4 border-r-blue-500 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-center w-full mb-2">
+                        <span class="text-xs font-black text-blue-600 dark:text-blue-400 tracking-wide">إحصائيات الأصناف والأقسام</span>
+                        <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                            <i data-lucide="boxes" class="w-4.5 h-4.5"></i>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 items-center border-t border-slate-100 dark:border-slate-800/80 pt-2">
+                        <div class="text-center border-l border-slate-200 dark:border-slate-800 pl-1">
+                            <span class="text-[10px] text-amber-500 font-bold block mb-0.5">إجمالي الأقسام:</span>
+                            <h3 id="stat-total-categories" class="text-sm sm:text-base font-black text-amber-500">0 قسم</h3>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-[10px] text-blue-600 dark:text-blue-400 font-bold block mb-0.5">إجمالي الأصناف:</span>
+                            <h3 id="stat-total-items" class="text-sm sm:text-base font-black text-blue-600 dark:text-blue-400">0 صنف</h3>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 3️⃣ سكشن الأقسام والمنتجات المسجلة وشريط الأزرار المحدث -->
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-sm">
+            
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <i data-lucide="folder-tree" class="w-5 h-5 text-blue-500"></i>
+                        <span>الأقسام والمنتجات المسجلة</span>
+                    </h2>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">ابحث بالاسم/الكود أو اختر قسماً محدداً للفلترة.</p>
+                </div>
+
+                <!-- أزرار التحكم الحديثة -->
+                <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                    
+                    <!-- زر إضافة صنف -->
+                    <button onclick="openAddItemModal()" title="إضافة صنف جديد" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-3.5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-md shadow-emerald-600/20 shrink-0">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>صنف</span>
+                    </button>
+
+                    <!-- زر إضافة قسم -->
+                    <button onclick="openCategoryManagerModal()" title="إضافة قسم جديد" class="bg-blue-600 hover:bg-blue-500 text-white font-black px-3.5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-md shadow-blue-600/20 shrink-0">
+                        <i data-lucide="folder-plus" class="w-4 h-4"></i>
+                        <span>قسم</span>
+                    </button>
+
+                    <!-- زر إعدادات وترتيب الأقسام -->
+                    <button onclick="openCategoryManagerModal()" title="إدارة الأقسام والترتيب" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 transition flex items-center justify-center shrink-0">
+                        <i data-lucide="settings" class="w-4 h-4 text-amber-500"></i>
+                    </button>
+
+                    <!-- زر الفلتر (أيقونة الفلتر فقط تفتح نافذة البحث والفلترة للأقسام) -->
+                    <button onclick="openCategoryFilterModal()" title="فلترة حسب القسم" class="bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-300 dark:border-slate-800 p-2.5 rounded-xl text-blue-500 transition flex items-center justify-center shrink-0 relative">
+                        <i data-lucide="filter" class="w-4 h-4"></i>
+                        <span id="filter-active-indicator" class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-blue-600 hidden"></span>
+                    </button>
+
+                    <!-- مربع البحث السريع عن المنتجات -->
+                    <div class="relative flex-1 sm:w-44 min-w-[120px]">
+                        <input type="text" id="search-box" oninput="handleSearchInput()" placeholder="🔍 بحث بالاسم، الكود..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-2.5 pr-8 rounded-xl text-xs font-bold outline-none focus:border-blue-500 text-slate-900 dark:text-white">
+                    </div>
+
+                    <!-- أزرار تبديل العرض (كتالوج / قائمة) -->
+                    <div class="flex items-center bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl p-1 gap-1 shrink-0">
+                        <button id="view-mode-grid-btn" onclick="setViewMode('grid')" title="عرض كتالوج / بطاقات" class="p-2 rounded-lg text-xs font-bold transition text-slate-600 dark:text-slate-400 hover:text-white flex items-center gap-1">
+                            <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                            <span class="hidden sm:inline">كتالوج</span>
+                        </button>
+                        <button id="view-mode-table-btn" onclick="setViewMode('table')" title="عرض قائمة / جدول" class="p-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-sm flex items-center gap-1">
+                            <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                            <span class="hidden sm:inline">قائمة</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- منطقة زر عرض المنتجات -->
+            <div id="lazy-render-container" class="py-8 text-center bg-slate-50 dark:bg-slate-950 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center mx-auto text-xl">📦</div>
+                <h3 class="text-sm font-black text-slate-900 dark:text-white">اكتب كلمة البحث أو اختر قسماً أو اضغط لعرض المنتجات</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">عند مسح البحث يتم إخفاء العرض تلقائياً لمنع الثقل عند كثرة الأصناف.</p>
+                <button onclick="forceRenderCatalogGrid()" class="bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs transition shadow-lg shadow-blue-600/20">
+                    عرض كافة السلع والمنتجات الان 👈
+                </button>
+            </div>
+
+            <!-- حاوية عرض النتائج -->
+            <div id="catalog-results-container" class="hidden"></div>
+        </section>
+
+    </main>
+
+    <!-- 🔍 نافذة منبثقة لفلترة والبحث داخل الأقسام -->
+    <div id="category-filter-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col max-h-[85vh]">
+            <div class="bg-slate-50 dark:bg-slate-950 p-4 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="filter" class="w-4 h-4 text-blue-500"></i> تصفية المنتجات حسب القسم
+                </h3>
+                <button onclick="closeCategoryFilterModal()" class="text-rose-500 font-black text-lg px-2">✕</button>
+            </div>
+
+            <div class="p-3 border-b border-slate-200 dark:border-slate-800 shrink-0 space-y-2">
+                <div class="relative">
+                    <input type="text" id="category-search-input" oninput="renderCategoryFilterOptions(this.value)" placeholder="🔍 ابحث عن اسم القسم..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-2.5 pr-8 rounded-xl text-xs font-bold outline-none focus:border-blue-500 text-slate-900 dark:text-white">
+                </div>
+            </div>
+
+            <div id="category-filter-options-list" class="p-3 overflow-y-auto space-y-1.5 custom-scrollbar flex-1">
+                <!-- تعبئة الأقسام ديناميكياً مع البحث -->
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-950 p-3 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center shrink-0">
+                <button onclick="selectCategoryFilter('')" class="text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">إلغاء الفلتر (عرض الكل)</button>
+                <button onclick="closeCategoryFilterModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4️⃣ نافذة منبثقة لإضافة صنف جديد (Modal) -->
+    <div id="add-item-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]">
+            <div class="bg-slate-50 dark:bg-slate-950 p-4 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">✨ إضافة صنف جديد للكتالوج والمخزون</h3>
+                <button onclick="closeAddItemModal()" class="text-rose-500 font-black text-lg px-2">✕</button>
+            </div>
+
+            <form id="add-item-form" onsubmit="handleAddNewItem(event)" class="p-5 overflow-y-auto space-y-4 custom-scrollbar text-xs font-bold flex-1">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div class="sm:col-span-2">
+                        <label class="block text-slate-500 dark:text-slate-400 mb-1">اسم الصنف / المنتج:</label>
+                        <input type="text" id="new-item-name" required placeholder="مثال: شاشة كمبيوتر 24 بوصة" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white font-black">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 mb-1">كود الصنف (اختياري):</label>
+                        <input type="text" id="new-item-code" placeholder="مثال: SCR-24" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white font-mono">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 mb-1">القسم الرئيسي:</label>
+                        <select id="new-item-category-select" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white font-bold">
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 mb-1">سعر التكلفة / الشراء (جملة):</label>
+                        <input type="number" id="new-item-cost" required placeholder="0" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-slate-500 text-slate-700 dark:text-slate-300 font-black">
+                    </div>
+
+                    <div>
+                        <label class="block text-emerald-600 dark:text-emerald-400 mb-1">سعر البيع للعميل (قطاعي):</label>
+                        <input type="number" id="new-item-price" required placeholder="0" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-emerald-500 text-emerald-600 dark:text-emerald-400 font-black">
+                    </div>
+
+                    <div>
+                        <label class="block text-amber-600 dark:text-amber-400 mb-1">الكمية المتاحة بالمخزن:</label>
+                        <input type="number" id="new-item-stock" value="10" min="0" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-amber-500 text-slate-900 dark:text-white text-center font-black">
+                    </div>
+
+                    <div>
+                        <label class="block text-rose-600 dark:text-rose-400 mb-1">حد التنبيه عند النقصان:</label>
+                        <input type="number" id="new-item-min-stock" value="3" min="1" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-rose-500 text-rose-600 dark:text-rose-400 text-center font-black">
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="block text-slate-500 dark:text-slate-400 mb-1">صورة المنتج (رابط مباشر أو ارفع ملف):</label>
+                        <div class="flex gap-2">
+                            <input type="url" id="new-item-image-url" placeholder="https://example.com/image.jpg" class="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white font-mono dir-ltr">
+                            <label class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 p-3 rounded-xl cursor-pointer flex items-center justify-center border border-slate-300 dark:border-slate-700 shrink-0">
+                                <i data-lucide="upload" class="w-4 h-4"></i>
+                                <input type="file" id="new-item-image-file" accept="image/*" onchange="convertImageToBase64(event)" class="hidden">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="closeAddItemModal()" class="bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white px-5 py-2.5 rounded-xl font-bold">إلغاء</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-6 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>حفظ الصنف سحابياً</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5️⃣ نافذة منبثقة لتعديل الشامل للمنتج (Edit Item Modal) -->
+    <div id="edit-item-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]">
+            <div class="bg-slate-50 dark:bg-slate-950 p-4 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">✏️ تعديل كافة تفاصيل المنتج</h3>
+                <button onclick="closeEditItemModal()" class="text-rose-500 font-black text-lg px-2">✕</button>
+            </div>
+
+            <form id="edit-item-form" onsubmit="handleSaveEditedItem(event)" class="p-5 overflow-y-auto space-y-4 custom-scrollbar text-xs font-bold flex-1">
+                <input type="hidden" id="edit-item-index">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div class="sm:col-span-2">
+                        <label class="block text-slate-500 dark:text-slate-400 mb-1">اسم الصنف / المنتج:</label>
+                        <input type="text" id="edit-item-name" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white font-black">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 mb-1">كود الصنف:</label>
+                        <input type="text" id="edit-item-code" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white font-mono">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 mb-1">القسم الرئيسي:</label>
+                        <select id="edit-item-category-select" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white font-bold">
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 mb-1">سعر التكلفة / الشراء (جملة):</label>
+                        <input type="number" id="edit-item-cost" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-slate-500 text-slate-700 dark:text-slate-300 font-black">
+                    </div>
+
+                    <div>
+                        <label class="block text-emerald-600 dark:text-emerald-400 mb-1">سعر البيع للعميل (قطاعي):</label>
+                        <input type="number" id="edit-item-price" required class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-emerald-500 text-emerald-600 dark:text-emerald-400 font-black">
+                    </div>
+
+                    <div>
+                        <label class="block text-amber-600 dark:text-amber-400 mb-1">الكمية المتاحة بالمخزن:</label>
+                        <input type="number" id="edit-item-stock" min="0" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-amber-500 text-slate-900 dark:text-white text-center font-black">
+                    </div>
+
+                    <div>
+                        <label class="block text-rose-600 dark:text-rose-400 mb-1">حد التنبيه عند النقصان:</label>
+                        <input type="number" id="edit-item-min-stock" min="1" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-rose-500 text-rose-600 dark:text-rose-400 text-center font-black">
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="block text-slate-500 dark:text-slate-400 mb-1">رابط الصورة المصغرة:</label>
+                        <input type="url" id="edit-item-image-url" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white font-mono dir-ltr">
+                    </div>
+                </div>
+
+                <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="closeEditItemModal()" class="bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white px-5 py-2.5 rounded-xl font-bold">إلغاء</button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>حفظ التعديلات سحابياً</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 6️⃣ نافذة إدارة وتعديل الأقسام والترتيب (Modal) -->
+    <div id="category-manager-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]">
+            <div class="bg-slate-50 dark:bg-slate-950 p-4 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">⚙️ إدارة الأقسام وتعديل الترتيب</h3>
+                <button onclick="closeCategoryManagerModal()" class="text-rose-500 font-black text-lg px-2">✕</button>
+            </div>
+
+            <div class="p-5 space-y-4 text-xs font-bold overflow-y-auto custom-scrollbar flex-1">
+                <div class="space-y-2 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <label class="block text-slate-700 dark:text-slate-300 mb-1">إضافة قسم جديد:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-category-name-input" placeholder="اكتب اسم القسم الجديد..." class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-2.5 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white">
+                        <button onclick="handleAddNewCategorySubmit()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-black transition shrink-0">إضافة</button>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <div class="flex justify-between items-center mb-2 text-slate-400">
+                        <span>الأقسام الحالية (تعديل الاسم والترتيب):</span>
+                        <span>عدد الأصناف المربوطة</span>
+                    </div>
+                    <div id="categories-modal-list" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-950 p-3 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+                <button onclick="closeCategoryManagerModal()" class="bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-white px-5 py-2 rounded-xl text-xs font-bold">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/catalog-page.js"></script>
+
+</body>
+</html>

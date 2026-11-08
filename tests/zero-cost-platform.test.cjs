@@ -10,6 +10,7 @@ if(!admin.includes("db.ref().update(updates)")) throw new Error("Atomic tenant c
 if(!html.includes("owner-uid")) throw new Error("Owner UID workflow missing");
 if(!cfg.includes("alisabersystem-staging")) throw new Error("Staging config missing");
 if(rules.platform[".write"].indexOf("auth.token.platformAdmin")<0) throw new Error("Platform write must require platformAdmin");
+if(!rules.platformBilling[".read"] || rules.platformBilling[".read"].indexOf("auth.token.platformAdmin")<0) throw new Error("Platform admins must be able to read the platformBilling collection");
 if(rules.tenants["$tenantId"][".read"].indexOf("tenantMemberships")<0) throw new Error("Tenant reads must require membership");
 if(fs.existsSync(path.join(root,"platform/functions"))) throw new Error("Functions must be absent in zero-cost edition");
 console.log("Zero-cost platform static checks passed.");

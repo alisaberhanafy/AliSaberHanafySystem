@@ -19,6 +19,7 @@
       }
     },
     "platformBilling": {
+      ".read": "auth != null && auth.token.platformAdmin == true",
       "$tenantId": {
         ".read": "auth != null && auth.token.platformAdmin == true",
         ".write": "auth != null && auth.token.platformAdmin == true",

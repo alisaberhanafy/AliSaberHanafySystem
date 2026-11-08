@@ -1,3 +1,8 @@
+## v1.5.5.1 — Platform billing read permission fix
+- Fixed the platform admin workshop list returning `Permission denied`: the console reads `/platformBilling` as a collection, so the RTDB rules now grant collection-level read access only to authenticated users with the `platformAdmin` custom claim.
+- Kept write permissions scoped to individual billing records and protected by the same platform-admin claim.
+- Added a static regression check for the collection-level read rule.
+
 # سجل التغييرات
 
 ## 1.2.0 — 2026-11-08

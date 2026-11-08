@@ -1,3 +1,13 @@
+# Changelog
+
+## v1.5.9 — Unified Staging Authentication & Tenant Data Isolation
+- Unified workshop, catalog, registration, and platform-admin client configuration on the same Staging Firebase project.
+- Replaced legacy `userRoles/{uid}` login authorization with `userTenantIndex/{uid}` + `tenantMemberships/{tenantId}/{uid}` validation.
+- Added a tenant-scoped data adapter at `tenants/{tenantId}/workshopData`; workshop and catalog reads/writes no longer target the shared legacy root.
+- Added platform-admin index creation, status synchronization, and repair for existing tenant owners.
+- Added RTDB rules for owner-index reads and tenant-scoped workshop data.
+- Kept legacy production data untouched; migration requires an explicit verified backup/import.
+
 ## v1.5.8 — Platform Admin UI Refresh
 
 - Reworked the platform administration interface into a bright white workspace with restrained violet accents, consistent card surfaces, and clearer visual hierarchy.

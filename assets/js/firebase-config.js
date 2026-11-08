@@ -1,13 +1,14 @@
 /**
- * Firebase client configuration. These values identify the existing project;
- * database authorization must be enforced with Firebase Security Rules.
+ * Shared Firebase client configuration.
+ * All platform and workshop pages intentionally use the same STAGING project.
+ * Firebase web config is public; authorization is enforced by RTDB rules.
  */
 window.AliFirebaseConfig = Object.freeze({
-    apiKey: "AIzaSyAZq7tcaSLqQ-zqmHigh9X3JZBERMLUN2I",
-    authDomain: "alisabersystem.firebaseapp.com",
-    databaseURL: "https://alisabersystem-default-rtdb.firebaseio.com/",
-    projectId: "alisabersystem",
-    storageBucket: "alisabersystem.firebasestorage.app",
-    messagingSenderId: "940493762512",
-    appId: "1:940493762512:web:4275b1d941b074c4d653d5"
+    apiKey: "AIzaSyBHl9rgas8egP590XRvdl4k3Hon86kJDZQ",
+    authDomain: "alisabersystem-staging.firebaseapp.com",
+    databaseURL: "https://alisabersystem-staging-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "alisabersystem-staging",
+    storageBucket: "alisabersystem-staging.firebasestorage.app",
+    messagingSenderId: "81230470647",
+    appId: "1:81230470647:web:0d7588417a36f1ac3622f2"
 });

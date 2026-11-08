@@ -73,7 +73,17 @@
           "$id": {
             ".write": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && (root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'owner' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'admin')"
           }
+        },
+        "workshopData": {
+          ".read": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'trial' || root.child('platformBilling').child($tenantId).child('status').val() == 'active')",
+          ".write": "auth != null && root.child('tenantMemberships').child($tenantId).child(auth.uid).child('active').val() == true && root.child('platform/tenantDirectory').child($tenantId).child('status').val() == 'active' && (root.child('platformBilling').child($tenantId).child('status').val() == 'trial' || root.child('platformBilling').child($tenantId).child('status').val() == 'active') && (root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'owner' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'admin' || root.child('tenantMemberships').child($tenantId).child(auth.uid).child('role').val() == 'editor')"
         }
+      }
+    },
+    "userTenantIndex": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.platformAdmin == true)",
+        ".write": "auth != null && auth.token.platformAdmin == true"
       }
     }
   }

@@ -97,6 +97,10 @@
         const updates = {};
         updates[`platform/tenantDirectory/${id}/status`] = nextStatus;
         updates[`platformBilling/${id}/status`] = nextStatus;
+        if (row.t.ownerUid) {
+          updates[`userTenantIndex/${row.t.ownerUid}/${id}/active`] = nextStatus === "active";
+          updates[`userTenantIndex/${row.t.ownerUid}/${id}/tenantId`] = id;
+        }
         updates[`platform/auditLog/${db.ref("platform/auditLog").push().key}`] = {
           action: "tenant.status.changed", tenantId: id, status: nextStatus,
           previousStatus: row.state, actorUid: auth.currentUser.uid, at: now
@@ -123,10 +127,26 @@
       ]);
       const directory = directorySnap.val() || {};
       const billing = billingSnap.val() || {};
-      tenantCache = Object.entries(directory).map(([id,t]) => {
+      const rows = await Promise.all(Object.entries(directory).map(async ([id,t]) => {
         const b = billing[id] || {};
-        return {id,t,b,state:tenantState(t.status,b.status)};
-      });
+        let membership = {};
+        if (t.ownerUid) {
+          const memberSnap = await db.ref(`tenantMemberships/${id}/${t.ownerUid}`).get();
+          membership = memberSnap.val() || {};
+        }
+        const state = tenantState(t.status,b.status);
+        return {id,t,b,state,membership};
+      }));
+      tenantCache = rows;
+      // Repair owner lookup entries for tenants created before this release.
+      const indexRepairs = {};
+      for (const row of rows) {
+        if (!row.t.ownerUid) continue;
+        const active = row.membership.active === true && (row.state === "active" || row.state === "trial");
+        const role = row.membership.role || "owner";
+        indexRepairs[`userTenantIndex/${row.t.ownerUid}/${row.id}`] = { tenantId: row.id, active, role };
+      }
+      if (Object.keys(indexRepairs).length) await db.ref().update(indexRepairs);
       renderTenants();
       status(`تم تحميل ${tenantCache.length} ورشة ومراجعة حالتها.`);
     } catch(e) {
@@ -156,6 +176,7 @@
       updates[`platform/tenantDirectory/${tenantId}`]={tenantId,name,mode:"saas",status:"active",ownerUid,createdAt:stamp};
       updates[`platformBilling/${tenantId}`]={mode:"saas",billingModel:$("billing").value,planId:$("plan").value,status:"trial",startsAt:stamp,currentPeriodEndsAt:null,providerReference:null,createdAt:stamp};
       updates[`tenantMemberships/${tenantId}/${ownerUid}`]={active:true,role:"owner",joinedAt:stamp,invitedBy:auth.currentUser.uid};
+      updates[`userTenantIndex/${ownerUid}/${tenantId}`]={tenantId,active:true,role:"owner"};
       updates[`tenants/${tenantId}/profile`]={workshopName:name,createdAt:stamp,createdBy:auth.currentUser.uid};
       updates[`tenants/${tenantId}/settings`]={currency:"EGP",timezone:"Africa/Cairo",invoicePrefix:"INV"};
       updates[`platform/auditLog/${db.ref("platform/auditLog").push().key}`]={action:"tenant.created",tenantId,ownerUid,actorUid:auth.currentUser.uid,at:stamp};

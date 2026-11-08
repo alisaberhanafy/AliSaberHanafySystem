@@ -26,7 +26,7 @@ if (!firebase.apps.length) firebase.initializeApp(window.AliFirebaseConfig);
                         catalogSaveRequested = false;
                         const expected = catalogBaselineJSON;
                         let conflict = false;
-                        const result = await db.ref('ali_saber_system_data').transaction(current => {
+                        const result = await AuthModule.dataRef().transaction(current => {
                             const remote = current || {};
                             const remoteCatalog = stableCatalogJSON({ catalogItems: remote.catalogItems ?? null, systemCategories: remote.systemCategories ?? null });
                             if (expected !== null && remoteCatalog !== expected) { conflict = true; return; }
@@ -102,7 +102,7 @@ if (!firebase.apps.length) firebase.initializeApp(window.AliFirebaseConfig);
             if (statusText) statusText.innerText = connected ? 'الاتصال السحابي نشط' : 'الاتصال السحابي غير متاح';
         });
 
-        db.ref('ali_saber_system_data').on('value', (snapshot) => {
+        AuthModule.dataRef().on('value', (snapshot) => {
             const incoming = snapshot.val() || {};
             const incomingJSON = stableCatalogJSON({ catalogItems: incoming.catalogItems ?? null, systemCategories: incoming.systemCategories ?? null });
             const localJSON = stableCatalogJSON({ catalogItems, systemCategories });

@@ -65,10 +65,9 @@ The console intentionally does not expose billing payment capture or direct Fire
 - Cloud Functions Admin SDK bypasses RTDB rules; each callable validates the caller's custom claim or membership explicitly.
 
 ## Current known gap (do not overlook)
-The existing workshop app still reads/writes the legacy root `/ali_saber_system_data`, and its Auth gate still checks legacy `/userRoles/{uid}`. It has not yet been migrated to `tenants/{tenantId}` or `tenantMemberships`. Therefore:
-- Do not deploy the multitenant rules to the current live Firebase project.
-- Do not expect the existing `index.html` workshop screen to load a tenant created by this console.
-- Next step after staging deployment is to build the tenant-aware application data adapter, then migrate the legacy workshop into the first tenant and reconcile all financial totals before cutover.
+The workshop application now uses the shared Staging Firebase configuration, resolves membership through `/userTenantIndex/{uid}` and `/tenantMemberships/{tenantId}/{uid}`, and stores its existing aggregate under `/tenants/{tenantId}/workshopData`. The platform console writes and repairs the owner index. Legacy `/ali_saber_system_data` and `/userRoles/{uid}` are not used by this tenant-aware build.
+
+Important cutover note: this update does not copy data from the old production Firebase project. Existing production records remain untouched. Before using historical workshop data in Staging, export a backup from the old system and import it only after verifying the intended tenant account. Never deploy the Staging rules to the production project.
 
 ## Dedicated edition
 The dedicated option is deliberately a separate Firebase project per workshop. Provision the project, Authentication, RTDB, rules, hosting and backups separately. The same application build can be configured for that project's Web App. One-time license state and support/maintenance expiry must be provisioned by trusted platform tooling, not by browser local storage.

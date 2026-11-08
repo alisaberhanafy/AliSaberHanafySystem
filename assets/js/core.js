@@ -109,7 +109,7 @@ const StateModule = {
             return;
         }
 
-        const ref = db.ref('ali_saber_system_data');
+        const ref = AuthModule.dataRef();
         db.ref('.info/connected').on('value', snapshot => {
             const connected = snapshot.val() === true;
             const banner = document.getElementById('firebase-status-banner');
@@ -191,7 +191,7 @@ const StateModule = {
                     this._saveRequested = false;
                     const expected = this._syncedRootJSON;
                     let conflictDetected = false;
-                    const result = await db.ref('ali_saber_system_data').transaction(current => {
+                    const result = await AuthModule.dataRef().transaction(current => {
                         const remote = current || {};
                         const remoteOwned = this.stableJSON({ catalogItems: remote.catalogItems ?? null, clientsList: remote.clientsList ?? null });
                         if (expected !== null && remoteOwned !== expected) { conflictDetected = true; return; }

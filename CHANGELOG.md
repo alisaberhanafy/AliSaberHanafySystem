@@ -1,3 +1,12 @@
+## v1.5.8 — Platform Admin UI Refresh
+
+- Reworked the platform administration interface into a bright white workspace with restrained violet accents, consistent card surfaces, and clearer visual hierarchy.
+- Increased Arabic typography sizes, form control heights, spacing, and status readability.
+- Added a collapsible desktop sidebar with saved preference and a mobile slide-in navigation drawer with scrim and Escape-to-close behavior.
+- Made the platform navigation links functional and connected them to the relevant page sections.
+- Preserved Firebase Authentication, Realtime Database operations, IDs, and existing tenant-isolation logic.
+- Added automated responsive-navigation and typography checks.
+
 ## v1.5.7 — Central System Portal
 
 - Added a modern responsive system homepage as the default `index.html` entry point.

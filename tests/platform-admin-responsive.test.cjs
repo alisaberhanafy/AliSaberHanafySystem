@@ -1,0 +1,13 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const html = fs.readFileSync(path.join(__dirname, '..', 'platform', 'public', 'platform-admin.html'), 'utf8');
+assert.match(html, /IBM\+Plex\+Sans\+Arabic/);
+assert.match(html, /sidebar-toggle/);
+assert.match(html, /sidebar-collapsed/);
+assert.match(html, /sidebar-open/);
+assert.match(html, /sidebar-scrim/);
+assert.match(html, /prefers-reduced-motion/);
+assert.match(html, /href="#workshops"/);
+assert.match(html, /href="#owners"/);
+console.log('Platform admin responsive UI checks passed.');

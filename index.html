@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALI SABER SYSTEM - المنظومة السحابية المتكاملة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -46,9 +49,17 @@
             </div>
 
             <div class="header-actions-group">
+                <button id="easy-mode-toggle" type="button" onclick="PreferencesModule.toggleMode()" title="التبديل بين الوضع السهل والاحترافي" class="header-btn mode-toggle-btn">
+                    <i data-lucide="wand-sparkles" class="icon-sm"></i>
+                    <span class="header-btn-text" id="easy-mode-toggle-label">الوضع السهل</span>
+                </button>
+                <button type="button" onclick="PreferencesModule.openSettings()" title="تخصيص لوحة التحكم" class="header-btn settings-open-btn">
+                    <i data-lucide="sliders-horizontal" class="icon-sm"></i>
+                    <span class="header-btn-text">تخصيص العرض</span>
+                </button>
                 <input type="file" id="restore-backup-file-input" class="hidden" accept=".json" onchange="importSystemBackup(event)">
                 
-                <button onclick="ThemeModule.toggleTheme()" title="تغيير الوضع" class="header-btn text-slate-700 dark:text-amber-400">
+                <button onclick="ThemeModule.toggleTheme()" title="تغيير الوضع" class="header-btn text-slate-700 dark:text-amber-400 advanced-only">
                     <i data-lucide="sun" id="theme-icon-sun" class="icon-sm hidden dark:inline"></i>
                     <i data-lucide="moon" id="theme-icon-moon" class="icon-sm inline dark:hidden text-slate-700"></i>
                     <span class="header-btn-text" id="theme-text">الوضع النهاري</span>
@@ -69,12 +80,12 @@
                     <span class="header-btn-text">البحث عن عميل</span>
                 </button>
 
-                <button onclick="window.location.href='catalog.html'" title="إدارة الكتالوج" class="header-btn">
+                <button onclick="window.location.href='catalog.html'" title="إدارة الكتالوج" class="header-btn advanced-only">
                     <i data-lucide="boxes" class="icon-sm text-amber-600 dark:text-amber-400"></i>
                     <span class="header-btn-text">إدارة الكتالوج</span>
                 </button>
 
-                <button onclick="openBackupOptionsModal()" title="النسخ الاحتياطي" class="header-btn text-slate-700 dark:text-emerald-400">
+                <button onclick="openBackupOptionsModal()" title="النسخ الاحتياطي" class="header-btn text-slate-700 dark:text-emerald-400 advanced-only">
                     <i data-lucide="database" class="icon-sm"></i>
                     <span class="header-btn-text">النسخ الاحتياطي</span>
                 </button>
@@ -114,7 +125,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 
                 <!-- 1. عمليات الشهر (من يوم 1) -->
-                <div id="monthly-ops-card-wrapper" onclick="DashboardModule.openMonthlyOperationsModal()" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-blue-500 transition-all flex flex-col justify-between">
+                <div id="monthly-ops-card-wrapper" data-dashboard-widget="monthlyOps" onclick="DashboardModule.openMonthlyOperationsModal()" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-blue-500 transition-all flex flex-col justify-between">
                     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                         <span class="text-xs font-black text-slate-700 dark:text-slate-300">📊 عمليات الشهر (من يوم 1)</span>
                         <span class="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg font-bold">التفاصيل 👈</span>
@@ -132,7 +143,7 @@
                 </div>
 
                 <!-- 2. إجمالي الديون (بره) -->
-                <div id="debts-card" onclick="DashboardModule.openFilteredClientsModal('debts')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-rose-500 transition-all flex flex-col justify-between">
+                <div id="debts-card" data-dashboard-widget="debts" onclick="DashboardModule.openFilteredClientsModal('debts')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-rose-500 transition-all flex flex-col justify-between">
                     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                         <span class="text-xs font-black text-slate-700 dark:text-slate-300">إجمالي الديون (بره)</span>
                         <span class="text-[10px] bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
@@ -143,7 +154,7 @@
                 </div>
 
                 <!-- 3. إجمالي المقدمات (عربون) -->
-                <div id="advances-card" onclick="DashboardModule.openFilteredClientsModal('advances')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-emerald-500 transition-all flex flex-col justify-between">
+                <div id="advances-card" data-dashboard-widget="advances" onclick="DashboardModule.openFilteredClientsModal('advances')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-emerald-500 transition-all flex flex-col justify-between">
                     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                         <span class="text-xs font-black text-slate-700 dark:text-slate-300">إجمالي المقدمات (عربون)</span>
                         <span class="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
@@ -154,7 +165,7 @@
                 </div>
 
                 <!-- 4. بيعت بكام النهارده (مستلم) -->
-                <div id="today-sales-card" onclick="DashboardModule.openFilteredClientsModal('todaySales')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-blue-500 transition-all flex flex-col justify-between">
+                <div id="today-sales-card" data-dashboard-widget="todaySales" onclick="DashboardModule.openFilteredClientsModal('todaySales')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-blue-500 transition-all flex flex-col justify-between">
                     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                         <span class="text-xs font-black text-slate-700 dark:text-slate-300">بيعت بكام النهارده (مستلم)</span>
                         <span class="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
@@ -165,7 +176,7 @@
                 </div>
 
                 <!-- 5. كسبت كام النهارده (ربحي) -->
-                <div id="today-profit-card" onclick="DashboardModule.openFilteredClientsModal('todayProfit')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-emerald-500 transition-all flex flex-col justify-between">
+                <div id="today-profit-card" data-dashboard-widget="todayProfit" onclick="DashboardModule.openFilteredClientsModal('todayProfit')" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-emerald-500 transition-all flex flex-col justify-between">
                     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                         <span class="text-xs font-black text-slate-700 dark:text-slate-300">كسبت كام النهارده (ربحي)</span>
                         <span class="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-lg font-bold">عرض 👈</span>
@@ -176,7 +187,7 @@
                 </div>
 
                 <!-- 6. إجمالي العملاء المسجلين -->
-                <div id="clients-card" onclick="ClientModule.openAllClientsModal()" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-indigo-500 transition-all flex flex-col justify-between">
+                <div id="clients-card" data-dashboard-widget="clients" onclick="ClientModule.openAllClientsModal()" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-4 rounded-3xl shadow-lg cursor-pointer hover:border-indigo-500 transition-all flex flex-col justify-between">
                     <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                         <span class="text-xs font-black text-slate-700 dark:text-slate-300">إجمالي العملاء المسجلين</span>
                         <span class="text-[10px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-lg font-bold">إدارة 👈</span>
@@ -189,7 +200,7 @@
             </div>
 
             <!-- الرسم البياني الحي -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-3 shadow-sm">
+            <div id="daily-chart-widget" data-dashboard-widget="dailyChart" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-3 shadow-sm">
                 <div class="flex justify-between items-center flex-wrap gap-2">
                     <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
                         <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-500 dark:text-blue-400"></i>
@@ -259,6 +270,34 @@
 
     </main>
 
+    <!-- إعدادات سهولة الاستخدام وتخصيص لوحة التحكم -->
+    <div id="display-settings-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="display-settings-title">
+        <section class="display-settings-panel w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
+            <header class="display-settings-head">
+                <div><span class="settings-eyebrow">WORKSPACE PERSONALIZATION</span><h2 id="display-settings-title">تخصيص مساحة العمل</h2><p>اختر طريقة العرض والمؤشرات التي تحتاجها فقط.</p></div>
+                <button type="button" onclick="PreferencesModule.closeSettings()" class="settings-close" aria-label="إغلاق">×</button>
+            </header>
+            <div class="display-settings-body">
+                <div class="mode-choice-grid">
+                    <label class="mode-choice"><input type="radio" name="workspace-mode" value="easy"><span class="mode-choice-icon">✦</span><strong>الوضع السهل</strong><small>أزرار مباشرة وقوائم أقل وتركيز على الشغل اليومي.</small></label>
+                    <label class="mode-choice"><input type="radio" name="workspace-mode" value="advanced"><span class="mode-choice-icon">▦</span><strong>الوضع الاحترافي</strong><small>كل الأدوات والإحصائيات والتفاصيل في مكان واحد.</small></label>
+                </div>
+                <div class="settings-section-title"><div><strong>محتويات لوحة التحكم</strong><small>إخفاء العنصر لا يحذف بياناته ولا يوقف حساباته.</small></div><button type="button" class="settings-reset" onclick="PreferencesModule.resetWidgets()">إعادة الافتراضي</button></div>
+                <div class="widget-preferences-grid">
+                    <label><input type="checkbox" data-widget-toggle="monthlyOps"><span>عمليات الشهر</span></label>
+                    <label><input type="checkbox" data-widget-toggle="debts"><span>إجمالي الديون</span></label>
+                    <label><input type="checkbox" data-widget-toggle="advances"><span>أرصدة العربون</span></label>
+                    <label><input type="checkbox" data-widget-toggle="todaySales"><span>مبيعات اليوم</span></label>
+                    <label><input type="checkbox" data-widget-toggle="todayProfit"><span>أرباح اليوم</span></label>
+                    <label><input type="checkbox" data-widget-toggle="clients"><span>عدد العملاء</span></label>
+                    <label><input type="checkbox" data-widget-toggle="dailyChart"><span>الرسم البياني</span></label>
+                </div>
+                <div class="settings-note"><span>ⓘ</span><p>الإعدادات الحالية تُحفظ لهذا الحساب على هذا الجهاز. سيتم ربطها بإعدادات الورشة السحابية بعد توحيد مسار بيانات كل ورشة وقواعد الصلاحيات.</p></div>
+            </div>
+            <footer class="display-settings-footer"><button type="button" class="settings-cancel" onclick="PreferencesModule.closeSettings()">إلغاء</button><button type="button" class="settings-save" onclick="PreferencesModule.saveSettings()">حفظ التخصيص</button></footer>
+        </section>
+    </div>
+
     <!-- 📦 نافذة خيارات النسخ الاحتياطي -->
     <div id="backup-options-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col">
@@ -315,6 +354,7 @@
     <script src="assets/js/dashboard.js"></script>
     <script src="assets/js/charts.js"></script>
     <script src="assets/js/invoice-sharing.js"></script>
+    <script src="assets/js/preferences.js"></script>
     <script src="assets/js/app.js"></script>
 </body>
 </html>

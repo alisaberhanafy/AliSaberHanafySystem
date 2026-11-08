@@ -1,0 +1,13 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const root = path.resolve(__dirname, '..');
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'assets/js/preferences.js'), 'utf8');
+assert.match(html, /id="easy-mode-toggle"/);
+assert.match(html, /id="display-settings-modal"/);
+assert.match(html, /assets\/js\/preferences\.js/);
+assert.match(js, /ali_saber_workspace_preferences_v1_/);
+assert.match(js, /localStorage\.setItem/);
+assert.doesNotMatch(js, /firebase\.database|db\.ref|\.set\(/, 'UI preferences must not write into legacy shared business data');
+console.log('Easy mode and per-account preferences checks passed.');

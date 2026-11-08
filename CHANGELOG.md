@@ -45,3 +45,11 @@
 - Rebuilt platform admin and workshop registration pages with a consistent responsive Arabic RTL design.
 - Improved registration feedback, UID copy action, and pending-activation explanation.
 - Kept Firebase authentication and tenant-management logic intact.
+
+## v1.5.5 — Easy Mode & Workspace Personalization
+- Added Easy Mode and Advanced Mode for workshop owners.
+- Added per-account dashboard widget visibility settings.
+- Added per-account local preference persistence without changing business data.
+- Added IBM Plex Sans Arabic/Latin typography and responsive settings UI.
+- Documented the current legacy data-path boundary and safe next steps for tenant-scoped cloud preferences.
+- No Firebase rules, authentication roles, invoice calculations, or business data paths changed.

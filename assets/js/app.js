@@ -49,6 +49,7 @@ async function importSystemBackup(event) {
 document.addEventListener('DOMContentLoaded', async () => {
     const allowed = await AuthModule.requireAccess();
     if (!allowed) return;
+    PreferencesModule.init();
     await StateModule.initLoad();
     ThemeModule.init();
     lucide.createIcons();

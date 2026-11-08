@@ -28,7 +28,7 @@ const AuthModule = {
                         try { await this.resolveTenantAccess(user); }
                         catch (error) { this._accessError = error.message || 'تعذر التحقق من عضوية الورشة.'; console.error('Tenant access resolution failed:', error); }
                     }
-                    this.renderGate();
+                    this.renderGate(this._accessError || '');
                     resolve(this.state());
                     unsubscribe?.();
                 });
@@ -125,7 +125,7 @@ const AuthModule = {
               </label>
               <button id="auth-submit" class="w-full rounded-xl bg-indigo-600 text-white p-3 font-black text-sm" type="submit">تسجيل الدخول</button>
             </form>
-            <p class="text-[11px] text-slate-500 mt-4 text-center">يتم التحقق من عضوية الورشة وحالتها قبل تحميل أي بيانات.</p>
+            <p class="text-[11px] text-slate-500 mt-4 text-center">يتم التحقق من عضوية الورشة وحالتها قبل تحميل أي بيانات.</p><p class="text-[10px] text-slate-400 mt-2 text-center" dir="ltr">Firebase: ${this.escape(window.AliFirebaseConfig?.projectId || "unknown")}</p>
           </section>`;
         document.body.appendChild(gate);
         gate.querySelector('#firebase-login-form').addEventListener('submit', async event => {
@@ -146,7 +146,8 @@ const AuthModule = {
             } catch (error) {
                 console.error('Authentication / membership check failed:', error);
                 this._accessError = error.message;
-                msg.textContent = error.code ? this.authError(error) : (error.message || 'تم تسجيل الدخول لكن تعذر العثور على عضوية ورشة نشطة.');
+                msg.textContent = this.describeLoginFailure(error);
+                msg.dataset.errorCode = error.code || 'application/unknown';
                 if (this.auth.currentUser && !this.tenantId) await this.auth.signOut();
                 button.disabled = false;
                 button.textContent = 'تسجيل الدخول';
@@ -167,17 +168,32 @@ const AuthModule = {
         return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     },
 
-    authError(error) {
+    describeLoginFailure(error) {
+        const code = String(error?.code || '');
         const map = {
             'auth/invalid-email': 'صيغة البريد الإلكتروني غير صحيحة.',
-            'auth/user-disabled': 'هذا الحساب معطل من Firebase Authentication.',
-            'auth/user-not-found': 'لا يوجد حساب بهذا البريد داخل مشروع Staging.',
-            'auth/wrong-password': 'كلمة المرور غير صحيحة.',
-            'auth/invalid-credential': 'بيانات الدخول غير صحيحة.',
-            'auth/too-many-requests': 'محاولات كثيرة. انتظر قليلاً ثم حاول مجدداً.',
-            'auth/network-request-failed': 'تعذر الاتصال بخدمة تسجيل الدخول.'
+            'auth/user-disabled': 'حساب Firebase هذا معطّل. راجع المستخدمين في Authentication.',
+            'auth/user-not-found': 'هذا البريد غير مسجل في مشروع Firebase الحالي (Staging).',
+            'auth/wrong-password': 'كلمة المرور غير صحيحة لهذا الحساب.',
+            'auth/invalid-credential': 'البريد أو كلمة المرور غير صحيحة، أو أن الحساب غير موجود في مشروع Staging.',
+            'auth/invalid-login-credentials': 'بيانات الدخول غير صحيحة. تأكد أن الحساب أُنشئ في مشروع Staging نفسه.',
+            'auth/too-many-requests': 'تم إيقاف المحاولات مؤقتاً لكثرتها. انتظر ثم حاول مجدداً.',
+            'auth/network-request-failed': 'تعذر الاتصال بخدمة Firebase Authentication. تحقق من الإنترنت.',
+            'auth/operation-not-allowed': 'تسجيل الدخول بالبريد وكلمة المرور غير مفعّل في Firebase Authentication.',
+            'auth/invalid-api-key': 'مفتاح Firebase API غير صالح أو لا يخص المشروع المحدد.',
+            'auth/app-not-authorized': 'هذا النطاق غير مصرح له في Firebase Authentication. أضف نطاق GitHub Pages إلى Authorized domains.',
+            'auth/unauthorized-domain': 'نطاق الموقع غير مضاف إلى Firebase Authentication > Settings > Authorized domains.',
+            'auth/email-not-verified': 'يجب تأكيد البريد الإلكتروني قبل تسجيل الدخول.',
+            'PERMISSION_DENIED': 'تم تسجيل الدخول، لكن Firebase رفض قراءة سجل عضوية الورشة. راجع نشر قواعد Realtime Database.',
+            'permission_denied': 'تم تسجيل الدخول، لكن Firebase رفض قراءة سجل عضوية الورشة. راجع نشر قواعد Realtime Database.'
         };
-        return map[error?.code] || error?.message || 'تعذر تسجيل الدخول. راجع إعدادات Firebase Authentication.';
+        if (map[code]) return map[code];
+        if (error?.message) return `تعذر إكمال الدخول: ${error.message}`;
+        return `تعذر إكمال الدخول (رمز الخطأ: ${code || 'غير متاح'}). مشروع Firebase: ${window.AliFirebaseConfig?.projectId || 'غير معروف'}. افتح Console لمعرفة التفاصيل.`;
+    },
+
+    authError(error) {
+        return this.describeLoginFailure(error);
     }
 };
 

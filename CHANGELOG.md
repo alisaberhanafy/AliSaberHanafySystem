@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.5.10 — Authentication Diagnostics
+- Replaced the generic login failure message with actionable Firebase Auth and Realtime Database diagnostics.
+- Added explicit handling for invalid credentials, missing users, disabled users, unauthorized GitHub Pages domains, invalid API keys, and database permission failures.
+- Displayed the active Firebase project ID in the login gate to expose staging/production mismatches.
+- Preserved tenant membership checks and data isolation; no security rules were weakened.
+- Added regression tests for auth diagnostics and ensured tenant-index tests run in CI.
+
 ## v1.5.9 — Unified Staging Authentication & Tenant Data Isolation
 - Unified workshop, catalog, registration, and platform-admin client configuration on the same Staging Firebase project.
 - Replaced legacy `userRoles/{uid}` login authorization with `userTenantIndex/{uid}` + `tenantMemberships/{tenantId}/{uid}` validation.

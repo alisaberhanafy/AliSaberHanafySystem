@@ -30,6 +30,8 @@ jobs:
           node tests/platform-admin-ui.test.cjs
           node tests/preferences.test.cjs
           node tests/portal.test.cjs
+          node tests/tenant-index.test.cjs
+          node tests/auth-diagnostics.test.cjs
 
       - name: Validate Firebase configuration and rules
         run: |

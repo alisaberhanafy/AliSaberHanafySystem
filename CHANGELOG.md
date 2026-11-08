@@ -40,3 +40,8 @@
 
 ## v1.5.4.1
 - Fixed missing closing parenthesis in tenant membership write security rule. Revalidated rule-expression delimiter balance.
+
+## v1.5.4.3 — UI Refresh
+- Rebuilt platform admin and workshop registration pages with a consistent responsive Arabic RTL design.
+- Improved registration feedback, UID copy action, and pending-activation explanation.
+- Kept Firebase authentication and tenant-management logic intact.

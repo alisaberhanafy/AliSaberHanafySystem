@@ -1,22 +1,53 @@
 <!doctype html>
-<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>تسجيل صاحب ورشة</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="firebase-config.staging.js"></script></head>
-<body class="bg-slate-100 min-h-screen p-4"><main class="max-w-lg mx-auto mt-10 bg-white rounded-2xl shadow p-6 space-y-4">
-<h1 class="text-2xl font-black">تسجيل صاحب ورشة</h1><p class="text-sm text-slate-600">أنشئ حساباً بالبريد وكلمة المرور. بعد التسجيل سيظهر UID؛ أرسله لمدير المنصة لربط حسابك بورشتك.</p>
-<input id="email" type="email" placeholder="البريد الإلكتروني" class="w-full border rounded-xl p-3">
-<input id="password" type="password" minlength="8" placeholder="كلمة المرور (8 أحرف على الأقل)" class="w-full border rounded-xl p-3">
-<button id="signup" class="w-full bg-indigo-600 text-white rounded-xl p-3 font-bold">إنشاء الحساب</button>
-<div id="result" class="hidden rounded-xl bg-emerald-50 p-4 text-sm break-all"></div><p id="error" class="text-sm text-rose-700"></p>
-</main>
+<html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101b2d">
+<title>إنشاء حساب صاحب ورشة | Ali Saber System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script><script src="firebase-config.staging.js"></script>
+<style>
+:root{--navy:#101b2d;--ink:#18263b;--muted:#718096;--line:#e4e9f0;--violet:#6558e8;--bg:#f3f6fa}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);font-family:"Cairo",Tahoma,sans-serif;color:var(--ink);display:grid;grid-template-columns:1fr 1fr}button,input{font:inherit}.visual{background:linear-gradient(145deg,#111d31,#263d63);color:#fff;padding:clamp(30px,6vw,90px);display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}.visual:before,.visual:after{content:"";position:absolute;border:1px solid #ffffff18;border-radius:50%;width:420px;height:420px;right:-180px;bottom:-140px;box-shadow:0 0 0 45px #ffffff08,0 0 0 90px #ffffff05}.visual:after{width:230px;height:230px;right:auto;left:-130px;top:-90px;bottom:auto}.brand{display:flex;align-items:center;gap:12px;position:relative;z-index:1}.mark{width:45px;height:45px;background:linear-gradient(140deg,#948bff,#5548d8);border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:22px}.brand b{display:block}.brand small{color:#aab9d0;font-size:11px}.visual-copy{position:relative;z-index:1;max-width:520px}.tag{color:#bdb7ff;font-size:11px;font-weight:800;letter-spacing:1px}.visual h1{font-size:clamp(27px,3vw,42px);line-height:1.55;margin:14px 0}.visual p{color:#c0cde0;font-size:14px;line-height:2;max-width:450px}.benefits{display:grid;gap:13px;margin-top:30px}.benefit{display:flex;gap:12px;align-items:center;color:#e3eaf5;font-size:12px}.check{width:25px;height:25px;border-radius:8px;background:#ffffff16;display:grid;place-items:center;color:#bdb7ff}.visual-foot{color:#8fa0b9;font-size:10px;position:relative;z-index:1}.form-side{display:grid;place-items:center;padding:30px}.card{width:min(100%,450px);background:#fff;border:1px solid var(--line);border-radius:22px;padding:clamp(25px,4vw,40px);box-shadow:0 18px 55px #1d31520d}.back{display:inline-flex;text-decoration:none;color:#65748a;font-size:11px;margin-bottom:28px}.icon{width:52px;height:52px;border-radius:16px;background:#eeedff;color:var(--violet);display:grid;place-items:center;font-size:24px;margin-bottom:18px}.card h2{font-size:22px;margin:0 0 7px}.desc{font-size:12px;color:var(--muted);line-height:1.9;margin:0 0 24px}.field{display:grid;gap:8px;margin:15px 0}.field label{font-size:11px;font-weight:700;color:#4b5b70}.field input{height:49px;border:1px solid #dce3ed;border-radius:11px;padding:0 14px;outline:none;font-size:13px;width:100%}.field input:focus{border-color:#8177ee;box-shadow:0 0 0 3px #6558e81a}.submit{width:100%;height:49px;border:0;border-radius:11px;background:var(--violet);color:#fff;font-weight:800;font-size:13px;margin-top:10px;cursor:pointer;box-shadow:0 8px 18px #6558e833}.submit:hover{background:#5145d6}.submit:disabled{opacity:.65;cursor:wait}.notice{background:#f5f6fa;border:1px solid #e8ebf1;border-radius:11px;padding:12px;color:#66758a;font-size:10px;line-height:1.9;margin-top:18px}.result{background:#effaf4;border:1px solid #cdeedb;border-radius:13px;padding:15px;margin-top:16px;font-size:12px;color:#176a47;line-height:1.9}.uid-row{display:flex;gap:8px;align-items:center;margin-top:9px;direction:ltr}.uid-row code{flex:1;overflow-wrap:anywhere;background:#fff;border:1px solid #d8eee1;border-radius:8px;padding:9px;font-size:11px;color:#245b45}.copy{border:0;background:#d9f3e4;color:#176a47;border-radius:8px;padding:9px 12px;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer}.error{color:#b33e4b;background:#fff4f4;border:1px solid #f3d5d8;padding:11px;border-radius:10px;font-size:11px;margin-top:14px}.hidden{display:none!important}
+@media(max-width:800px){body{grid-template-columns:1fr}.visual{min-height:300px;padding:28px}.visual-copy{margin:42px 0 25px}.visual h1{font-size:26px}.benefits{grid-template-columns:1fr 1fr}.form-side{padding:20px}.card{max-width:520px}.visual-foot{display:none}}
+@media(max-width:430px){.benefits{grid-template-columns:1fr}.visual{min-height:260px}.visual-copy{margin:25px 0}}
+</style></head>
+<body>
+<section class="visual">
+  <div class="brand"><div class="mark">A</div><div><b>Ali Saber System</b><small>Workshop Management Platform</small></div></div>
+  <div class="visual-copy"><div class="tag">WORKSHOP PARTNER PORTAL</div><h1>ابدأ إدارة ورشتك<br>بشكل أكثر تنظيماً.</h1><p>أنشئ حسابك لتجهيز ملفك على المنصة. بعد مراجعة وربط الحساب من الإدارة، ستتمكن من استخدام نظام الورشة.</p>
+    <div class="benefits"><div class="benefit"><span class="check">✓</span> حساب مستقل لكل صاحب ورشة</div><div class="benefit"><span class="check">✓</span> بيانات منفصلة وخاصة</div><div class="benefit"><span class="check">✓</span> إدارة الفواتير والحسابات</div><div class="benefit"><span class="check">✓</span> وصول من الأجهزة المختلفة</div></div>
+  </div>
+  <div class="visual-foot">© Ali Saber System · بوابة تسجيل الشركاء</div>
+</section>
+<main class="form-side"><section class="card">
+  <a class="back" href="platform-admin.html">← العودة إلى لوحة المنصة</a>
+  <div class="icon">♙</div><h2>إنشاء حساب صاحب ورشة</h2><p class="desc">أدخل بريدك الإلكتروني وأنشئ كلمة مرور قوية. بعد التسجيل سيظهر معرّف حسابك (UID) لإرساله إلى إدارة المنصة لاستكمال ربط الورشة.</p>
+  <form id="signup-form">
+    <div class="field"><label for="email">البريد الإلكتروني</label><input id="email" type="email" autocomplete="email" required placeholder="name@example.com"></div>
+    <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" minlength="8" autocomplete="new-password" required placeholder="8 أحرف على الأقل"></div>
+    <button id="signup" class="submit" type="submit">إنشاء الحساب <span>←</span></button>
+  </form>
+  <div class="notice">إنشاء الحساب لا يعني تفعيل الورشة تلقائياً. لن تتمكن من الوصول إلى بيانات أي ورشة حتى تقوم الإدارة بمراجعة حسابك وربطه بعضوية صحيحة.</div>
+  <div id="result" class="result hidden"><strong>تم إنشاء الحساب بنجاح.</strong><br>احتفظ بمعرّف UID وأرسله إلى إدارة المنصة لإكمال التسجيل.<div class="uid-row"><code id="uid-value"></code><button id="copy-uid" class="copy" type="button">نسخ UID</button></div></div>
+  <p id="error" class="error hidden" role="alert"></p>
+</section></main>
 <script>
-const app=firebase.initializeApp(window.AliFirebaseConfig), auth=firebase.auth();
-document.getElementById("signup").addEventListener("click",async()=>{
- const email=document.getElementById("email").value.trim(), password=document.getElementById("password").value;
- const err=document.getElementById("error"), out=document.getElementById("result"); err.textContent=""; out.classList.add("hidden");
- try{const cred=await auth.createUserWithEmailAndPassword(email,password); out.innerHTML="<strong>تم إنشاء الحساب.</strong><br>UID: <code></code><br>انسخ UID وأرسله لمدير المنصة.";out.querySelector("code").textContent=cred.user.uid;out.classList.remove("hidden");}
- catch(e){err.textContent=e.message;}
+const app=firebase.apps.length?firebase.app():firebase.initializeApp(window.AliFirebaseConfig),auth=firebase.auth();
+const form=document.getElementById("signup-form"),button=document.getElementById("signup"),errorBox=document.getElementById("error"),result=document.getElementById("result");
+form.addEventListener("submit",async event=>{
+ event.preventDefault();errorBox.classList.add("hidden");result.classList.add("hidden");
+ const email=document.getElementById("email").value.trim(),password=document.getElementById("password").value;
+ button.disabled=true;button.textContent="جارٍ إنشاء الحساب...";
+ try{
+  const credential=await auth.createUserWithEmailAndPassword(email,password);
+  document.getElementById("uid-value").textContent=credential.user.uid;
+  result.classList.remove("hidden");form.classList.add("hidden");
+ }catch(error){
+  const messages={"auth/email-already-in-use":"هذا البريد مسجل بالفعل. جرّب تسجيل الدخول أو استخدم بريداً آخر.","auth/invalid-email":"صيغة البريد الإلكتروني غير صحيحة.","auth/weak-password":"كلمة المرور ضعيفة. استخدم 8 أحرف على الأقل.","auth/operation-not-allowed":"التسجيل بالبريد وكلمة المرور غير مفعّل في Firebase Authentication.","auth/network-request-failed":"تعذر الاتصال بالإنترنت. تحقق من الاتصال وحاول مرة أخرى."};
+  errorBox.textContent=messages[error.code]||"تعذر إنشاء الحساب. "+(error.message||"");errorBox.classList.remove("hidden");
+ }finally{button.disabled=false;button.textContent="إنشاء الحساب ←";}
+});
+document.getElementById("copy-uid").addEventListener("click",async()=>{
+ const value=document.getElementById("uid-value").textContent;
+ try{await navigator.clipboard.writeText(value);document.getElementById("copy-uid").textContent="تم النسخ ✓";}
+ catch{document.getElementById("copy-uid").textContent="انسخ يدوياً";}
 });
 </script></body></html>

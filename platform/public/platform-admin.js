@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id);
   const status = (message, error=false) => {
     $("status").textContent = message;
-    $("status").className = `rounded-xl p-4 text-sm shadow-sm ${error ? "bg-rose-50 text-rose-700" : "bg-white text-slate-700"}`;
+    $("status").className = `status${error ? " error" : (auth.currentUser ? " ok" : "")}`;
   };
   const now = firebase.database.ServerValue.TIMESTAMP;
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -45,13 +45,13 @@
       const rows = Object.entries(directory);
       $("tenant-list").innerHTML = rows.length ? rows.map(([id,t]) => {
         const b = billing[id] || {};
-        return `<article class="border rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
-          <div><strong>${esc(t.name)}</strong><div class="text-xs text-slate-500 mt-1" dir="ltr">${esc(id)} · ${esc(t.ownerUid)} · ${esc(b.status || "غير محدد")}</div></div>
-          <div class="flex gap-2">
-            <button data-id="${esc(id)}" data-status="active" class="status-btn bg-emerald-100 text-emerald-800 rounded-lg px-3 py-2 text-xs">تفعيل</button>
-            <button data-id="${esc(id)}" data-status="suspended" class="status-btn bg-rose-100 text-rose-800 rounded-lg px-3 py-2 text-xs">إيقاف</button>
+        return `<article class="tenant-item">
+          <div><div class="tenant-name">${esc(t.name)}</div><div class="tenant-meta" dir="ltr">${esc(id)} · ${esc(t.ownerUid)} · ${esc(b.status || "غير محدد")}</div></div>
+          <div class="tenant-actions">
+            <button data-id="${esc(id)}" data-status="active" class="status-btn">تفعيل</button>
+            <button data-id="${esc(id)}" data-status="suspended" class="status-btn">إيقاف</button>
           </div></article>`;
-      }).join("") : '<p class="text-slate-500">لا توجد ورش مسجلة.</p>';
+      }).join("") : '<div class="empty"><b>لا توجد ورش مسجلة حتى الآن</b>ابدأ بإضافة أول ورشة من النموذج المجاور.</div>';
       document.querySelectorAll(".status-btn").forEach(btn => btn.addEventListener("click", async () => {
         try {
           const id=btn.dataset.id, st=btn.dataset.status;
